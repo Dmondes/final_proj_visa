@@ -1,0 +1,110 @@
+<div class="container-fluid py-4">
+    <div class="row">
+      <div class="col-md-12">
+        <h2 class="mb-3">
+          <i class="ti ti-chart-bar me-2"></i>
+          {{ ticker }} Stock Information
+        </h2>
+        
+        @if (isLoading) {
+          <div class="text-center my-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading stock information...</p>
+          </div>
+        }
+        
+        @if (error) {
+          <div class="alert alert-danger">
+            <i class="ti ti-alert-circle me-2"></i>{{ error }}
+          </div>
+        }
+        
+        @if (stock && !isLoading) {
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="d-flex align-items-center mb-3">
+                    <h3 class="mb-0 me-3">${{ stock.c | number:'1.2-2' }}</h3>
+                    <span [ngClass]="getPriceChangeClass()" class="d-flex align-items-center">
+                      <i [class]="getChangeIcon()" class="me-1"></i>
+                      {{ stock.d | number:'1.2-2' }} ({{ stock.dp | number:'1.2-2' }}%)
+                    </span>
+                  </div>
+                  
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <div class="card bg-light h-100">
+                        <div class="card-body">
+                          <h6 class="card-subtitle mb-1 text-muted">Previous Close</h6>
+                          <p class="card-text h5">${{ stock.pc | number:'1.2-2' }}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="card bg-light h-100">
+                        <div class="card-body">
+                          <h6 class="card-subtitle mb-1 text-muted">Open</h6>
+                          <p class="card-text h5">${{ stock.o | number:'1.2-2' }}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="card bg-light h-100">
+                        <div class="card-body">
+                          <h6 class="card-subtitle mb-1 text-muted">Day's High</h6>
+                          <p class="card-text h5">${{ stock.h | number:'1.2-2' }}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="card bg-light h-100">
+                        <div class="card-body">
+                          <h6 class="card-subtitle mb-1 text-muted">Day's Low</h6>
+                          <p class="card-text h5">${{ stock.l | number:'1.2-2' }}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="col-md-6">
+                  <div class="card bg-light h-100">
+                    <div class="card-body">
+                      <h5 class="card-title">Price Range</h5>
+                      <div class="progress my-3" style="height: 10px;">
+                        <div class="progress-bar bg-success" role="progressbar" 
+                             [style.width]="((stock.c - stock.l) / (stock.h - stock.l) * 100) + '%'" 
+                             aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                      </div>
+                      <div class="d-flex justify-content-between">
+                        <span>${{ stock.l | number:'1.2-2' }}</span>
+                        <span class="text-center">
+                          <i class="ti ti-arrow-up-circle"></i>
+                        </span>
+                        <span>${{ stock.h | number:'1.2-2' }}</span>
+                      </div>
+                      <div class="mt-4">
+                        <h6>Today's Trading Summary</h6>
+                        <p class="mb-1">
+                          <small>
+                            {{ ticker }} opened at <strong>${{ stock.o | number:'1.2-2' }}</strong> today and 
+                            is currently trading at <strong>${{ stock.c | number:'1.2-2' }}</strong>,
+                            which is <span [ngClass]="getPriceChangeClass()">{{ stock.d > 0 ? 'up' : 'down' }} 
+                            {{ stock.dp | number:'1.2-2' }}%</span> from the previous close of 
+                            <strong>${{ stock.pc | number:'1.2-2' }}</strong>.
+                          </small>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>

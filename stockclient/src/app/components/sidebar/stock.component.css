@@ -1,0 +1,35 @@
+.card {
+    transition: transform 0.2s;
+    border-radius: 0.5rem;
+  }
+  
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  }
+  
+  .progress {
+    border-radius: 5px;
+    background-color: #e9ecef;
+  }
+  
+  .progress-bar {
+    transition: width 0.6s ease;
+  }
+  
+  h2 {
+    font-weight: 600;
+    color: #333;
+  }
+  
+  .text-success {
+    color: #28a745 !important;
+  }
+  
+  .text-danger {
+    color: #dc3545 !important;
+  }
+  
+  .bg-light {
+    background-color: #f8f9fa !important;
+  }

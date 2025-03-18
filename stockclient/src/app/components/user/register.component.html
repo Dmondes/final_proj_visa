@@ -1,0 +1,90 @@
+<div class="page-header">
+  <div class="page-block">
+    <div class="row align-items-center">
+      <div class="col-md-12">
+        <div class="page-header-title">
+          <h5 class="m-b-10">Register</h5>
+        </div>
+        <ul class="breadcrumb">
+          <li class="breadcrumb-item"><a routerLink="/home">Home</a></li>
+          <li class="breadcrumb-item" aria-current="page">Register</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-sm-12 col-md-6 col-lg-4">
+    <div class="card">
+      <div class="card-header">
+        <h5>Create Account</h5>
+      </div>
+      <div class="card-body">
+        <form [formGroup]="registerForm" (ngSubmit)="processRegistration()">
+          <div class="form-group mb-3">
+            <label class="form-label">Email address</label>
+            <input type="email" class="form-control" formControlName="email" placeholder="Enter email">
+            @if (registerForm.get('email')?.invalid && registerForm.get('email')?.touched) {
+              <small class="text-danger">
+                @if (registerForm.get('email')?.errors?.['required']) {
+                  Email is required
+                } @else if (registerForm.get('email')?.errors?.['email']) {
+                  Please enter a valid email address
+                }
+              </small>
+            }
+          </div>
+          
+          <div class="form-group mb-3">
+            <label class="form-label">Password</label>
+            <input type="password" class="form-control" formControlName="password" placeholder="Password">
+            @if (registerForm.get('password')?.invalid && registerForm.get('password')?.touched) {
+              <small class="text-danger">
+                @if (registerForm.get('password')?.errors?.['required']) {
+                  Password is required
+                } @else if (registerForm.get('password')?.errors?.['minlength']) {
+                  Password must be at least 6 characters
+                }
+              </small>
+            }
+          </div>
+          
+          <div class="form-group mb-3">
+            <label class="form-label">Confirm Password</label>
+            <input type="password" class="form-control" formControlName="confirmPassword" placeholder="Confirm Password">
+            @if (registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched || 
+                 registerForm.hasError('mismatch') && registerForm.get('confirmPassword')?.touched) {
+              <small class="text-danger">
+                @if (registerForm.get('confirmPassword')?.errors?.['required']) {
+                  Confirm Password is required
+                } @else if (registerForm.hasError('mismatch')) {
+                  Passwords do not match
+                }
+              </small>
+            }
+          </div>
+          
+          <div class="text-center">
+            <button type="submit" class="btn btn-primary me-2" [disabled]="registerForm.invalid">Register</button>
+            <a routerLink="/login" class="btn btn-link">Back to Login</a>
+          </div>
+          
+          @if (error) {
+            <div class="alert alert-danger mt-3">
+              <i class="ti ti-alert-circle me-2"></i>
+              {{ error }}
+            </div>
+          }
+          
+          @if (success) {
+            <div class="alert alert-success mt-3">
+              <i class="ti ti-check me-2"></i>
+              {{ success }}
+            </div>
+          }
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,139 @@
+<div class="page-header">
+  <div class="page-block">
+    <div class="row align-items-center">
+      <div class="col-md-12">
+        <div class="page-header-title">
+          <h5 class="m-b-10">Trending Stocks</h5>
+        </div>
+        <ul class="breadcrumb">
+          <li class="breadcrumb-item"><a routerLink="/home">Home</a></li>
+          <li class="breadcrumb-item" aria-current="page">Trending</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-sm-12">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5>
+          <i class="ti ti-trending-up me-1"></i> Trending Stocks 
+          <small class="text-muted">({{ timeFrameControl.value }})</small>
+        </h5>
+        <div class="d-flex align-items-center">
+          <span class="me-2">Last updated: {{ lastUpdate | date:'mediumTime' }}</span>
+          <div class="input-group">
+            <label class="input-group-text" for="timeframe">Timeframe:</label>
+            <select id="timeframe" class="form-select" [formControl]="timeFrameControl">
+              <option value="24hr">24 Hours</option>
+              <option value="7d">7 Days</option>
+              <option value="30d">30 Days</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-info">
+          <marquee behavior="scroll" direction="left">
+            <strong>🚀 STONKS ONLY GO UP!!! 🚀</strong> ••• LATEST TRENDING TICKERS ••• 📈
+          </marquee>
+        </div>
+
+        @if (trendingStocks?.length) {
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Ticker</th>
+                  <th>Mentions</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (stock of paginatedStocks; track stock[0]) {
+                  <tr class="cursor-pointer" (click)="showRecentPosts(stock[0])">
+                    <td><strong>{{ stock[0] }}</strong></td>
+                    <td>{{ stock[1] }}</td>
+                    <td>
+                      @if (loginStatus) {
+                        <button class="btn btn-sm btn-primary" (click)="$event.stopPropagation(); addToWatchlist(stock[0])">
+                          <i class="ti ti-plus"></i> Add to Watchlist
+                        </button>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+            
+            <!-- Pagination Controls -->
+            <nav aria-label="Trending stocks pagination">
+              <ul class="pagination justify-content-center">
+                <li class="page-item" [class.disabled]="currentPage === 1">
+                  <a class="page-link" href="javascript:void(0)" (click)="prevPage()">
+                    <i class="ti ti-chevron-left"></i>
+                  </a>
+                </li>
+                
+                @for (page of getPageNumbers(); track page) {
+                  <li class="page-item" [class.active]="page === currentPage">
+                    <a class="page-link" href="javascript:void(0)" (click)="goToPage(page)">
+                      {{ page }}
+                    </a>
+                  </li>
+                }
+                
+                <li class="page-item" [class.disabled]="currentPage === totalPages">
+                  <a class="page-link" href="javascript:void(0)" (click)="nextPage()">
+                    <i class="ti ti-chevron-right"></i>
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        } @else {
+          <div class="alert alert-warning">
+            <i class="ti ti-alert-circle me-2"></i>
+            No trending stocks data available.
+          </div>
+        }
+        
+        @if (recentPosts?.length && selectedTicker) {
+          <div class="mt-4">
+            <div class="card">
+              <div class="card-header">
+                <h5>Recent Posts for {{ selectedTicker }}</h5>
+              </div>
+              <div class="card-body">
+                <div class="list-group">
+                  @for (post of recentPosts; track post.postUrl) {
+                    <a [href]="post.postUrl" target="_blank" rel="noopener noreferrer" class="list-group-item list-group-item-action flex-column align-items-start">
+                      <div class="d-flex w-100 justify-content-between">
+                        <h6 class="mb-1">{{ post.title }}</h6>
+                        <small>{{ post.createdTime | date:'medium' }}</small>
+                      </div>
+                      <div class="d-flex flex-wrap">
+                        <small class="me-2"><i class="ti ti-arrow-up me-1"></i>Score: {{ post.score }}</small>
+                        <small class="me-2"><i class="ti ti-percentage me-1"></i>Upvote Ratio: {{ post.upvoteRatio }}</small>
+                        <small class="me-2"><i class="ti ti-message me-1"></i>Comments: {{ post.numComments }}</small>
+                        <small class="me-2"><i class="ti ti-tag me-1"></i>{{ post.flairText || 'No Flair' }}</small>
+                        <small><i class="ti ti-brand-reddit me-1"></i>r/{{ post.subReddit }}</small>
+                      </div>
+                    </a>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        } @else if (selectedTicker) {
+          <div class="alert alert-info mt-4">
+            <i class="ti ti-info-circle me-2"></i>
+            No recent posts available for {{ selectedTicker }}.
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>
