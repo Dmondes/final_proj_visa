@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>sg.edu.nus.iss</groupId>
-	<artifactId>stonks</artifactId>
+	<artifactId>server</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>stonks</name>
+	<name>server</name>
 	<description>Stock scraper</description>
 	<url/>
 	<licenses>

@@ -29,21 +29,21 @@ Fintrend is a web application that tracks trending stocks discussed on popular i
 
 The project is divided into two main parts:
 
-*   **`stockclient` (Frontend):**  Contains the Angular application.  Key directories and files include:
+*   **`client` (Frontend):**  Contains the Angular application.  Key directories and files include:
     *   `src/app/components`:  Contains Angular components for various parts of the UI (navbar, sidebar, user authentication, etc.).
     *   `src/app/services`:  Provides services for interacting with the backend API (e.g., `StockService`, `UserService`).
     *   `src/app/model`:  Defines data models (e.g., `Stock`, `StockPrice`, `User`, `Post`).
     *   `src/app/app-routing.module.ts`:  Defines the application's routes.
     *   `src/app/app.module.ts`:  The main Angular module.
 
-*   **`stonks` (Backend):** Contains the Spring Boot application.  Key directories and files include:
-    *   `src/main/java/sg/edu/nus/iss/stonks`:  The main package.
+*   **`server` (Backend):** Contains the Spring Boot application.  Key directories and files include:
+    *   `src/main/java/sg/edu/nus/iss/server`:  The main package.
     *   `config`:  Configuration files (e.g., `ScrapConfig` for API keys).
     *   `model`:  Data models (mirrors the frontend models).
     *   `repo`:  Repositories for database interaction (`MongoRepo`, `MysqlRepo`, `ScrapRepo`).
     *   `restcontroller`:  REST controllers (`TicketController`, `UserController`) to handle API requests.
     *   `service`:  Service classes (`ScrapService`, `UserService`) containing business logic.
-    *   `StonksApplication.java`:  The main Spring Boot application class, including scheduled tasks.
+    *   `ServerApplication.java`:  The main Spring Boot application class, including scheduled tasks.
     *   `resources/application.properties`:  Application configuration (database credentials, API keys, scheduling cron expressions).
      *   `resources/stock.sql`:  SQL script to create the MySQL database and tables.
 
@@ -57,12 +57,12 @@ The project is divided into two main parts:
     *   Reddit API credentials (client ID, client secret, username, password)
     *   Finnhub API key.
 
-2.  **Backend (stonks):**
+2.  **Backend (Server):**
     *   Create the MySQL database and tables by running the `src/main/resources/stock.sql` script.
     *   Run the application: `mvn spring-boot:run`
 
-3.  **Frontend (stockclient):**
-    *   Navigate to the `stockclient` directory.
+3.  **Frontend (client):**
+    *   Navigate to the `client` directory.
     *   Install dependencies: `npm install`
 
 4. **API Endpoints (Backend):**
