@@ -1,0 +1,36 @@
+<div class="card">
+  <div class="card-header">
+    <h5>My Watchlist</h5>
+  </div>
+  <div class="card-body">
+    @if (watchlist | async; as list) {
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Ticker</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (ticker of watchlist | async; track ticker) {
+              <tr>
+                <td><strong>{{ ticker }}</strong></td>
+                <td>
+                  <button class="btn btn-sm btn-danger" (click)="removeFromWatchlist(ticker)">
+                    <i class="ti ti-trash"></i> Remove
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <div class="alert alert-info mb-0">
+        <i class="ti ti-info-circle me-2"></i>
+        No stocks in your watchlist. Add some from the trending page!
+      </div>
+    }
+  </div>
+</div>

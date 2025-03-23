@@ -1,3 +1,4 @@
 {
-    "livePreview.defaultPreviewPath": "/stockclient/src/app/components/dashboard.component.html"
+    "livePreview.defaultPreviewPath": "/stockclient/src/app/components/dashboard.component.html",
+    "java.compile.nullAnalysis.mode": "disabled"
 }
