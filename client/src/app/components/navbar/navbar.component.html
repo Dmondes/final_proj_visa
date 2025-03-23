@@ -7,8 +7,8 @@
   </button>
   
   <!-- Search Form -->
-  <form [formGroup]="searchForm" (ngSubmit)="search()" class="w-100">
-    <input class="form-control form-control-dark w-100" type="search" placeholder="Search Ticker..." formControlName="ticker" aria-label="Search">
+  <form [formGroup]="searchForm" (submit)="search()" class="w-100">
+    <input class="form-control w-100" type="search" placeholder="Search Ticker..." formControlName="ticker" aria-label="Search">
   </form>
   
   @if(this.searchForm.controls['ticker'].touched && this.searchForm.controls['ticker'].invalid){

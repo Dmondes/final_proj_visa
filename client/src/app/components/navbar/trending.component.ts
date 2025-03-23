@@ -15,9 +15,9 @@ import { UserStore } from '../../user.store';
 export class TrendingComponent implements OnInit {
 
   trendingStocks: any[] | undefined;
-  timeFrameControl = new FormControl('24hr');
+  timeFrameControl = new FormControl('24h');
   lastUpdate = new Date();
-  timeFrame = '24hr';
+  timeFrame = '24h';
   recentPosts: any[] | undefined;
   selectedTicker!: string;
 
@@ -41,8 +41,8 @@ export class TrendingComponent implements OnInit {
   }
 
   loadDataByTimeframe(timeframe: string) {
-    this.stockService.getTrendingStocks(timeframe).subscribe(data => { //pass timeframe to the getTrendingStocks
-      // Correctly sort and assign to trendingStocks.  It's now an array.
+    this.stockService.getTrendingStocks(timeframe).subscribe(data => { //pass timeframe 
+      
       this.trendingStocks = Object.entries(data).sort((a: any, b: any) => b[1] - a[1]);
       this.lastUpdate = new Date();
       this.recentPosts = [];
@@ -63,7 +63,6 @@ export class TrendingComponent implements OnInit {
   }
 
   async addToWatchlist(ticker: string) {
-    // Use firstValueFrom with currentUser$ to get the current user as a Promise.
     try {
       const user = await firstValueFrom(this.userService.currentUser);
 
@@ -88,7 +87,7 @@ export class TrendingComponent implements OnInit {
     return this.trendingStocks.slice(startIndex, endIndex);
   }
 
-  // Navigation methods
+  // Navigation
   goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
@@ -107,7 +106,6 @@ export class TrendingComponent implements OnInit {
     }
   }
 
-  // Helper method to generate page numbers for pagination
   getPageNumbers(): number[] {
     return Array.from({ length: this.totalPages }, (_, i) => i + 1);
   }

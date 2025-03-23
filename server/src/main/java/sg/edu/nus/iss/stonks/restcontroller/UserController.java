@@ -42,12 +42,6 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
     }
 
-    // @GetMapping("/user/watchlist")
-    // public ResponseEntity<Set<String>> getWatchList(@RequestParam String email) {
-    //     Set<String> watchlist = userService.getWatchList(email);
-    //     return ResponseEntity.ok(watchlist);
-    // }
-
     @PostMapping("/user/watchlist/add")
     public ResponseEntity<String> addToWatchlist(@RequestParam String email, @RequestParam String ticker) {
         userService.addToWatchlist(email, ticker);

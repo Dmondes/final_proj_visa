@@ -67,9 +67,9 @@ public class ScrapRepo {
             "GOLD", "GO", "GOOD", "GT", "HAS", "HE", "HIGH", "HI", "HOLD", "ICU", "IRS", "IT",
             "JOB", "K", "LMT", "LOW", "LUCK","M", "MAIN", "MAR", "ME", "MSN",
             "NAT", "NET", "NEW", "NOW","OLD", "ON", "ONE", "OPEN", "OR", "OUT",
-            "P/E", "PER", "PLAY", "POST", "PRICE", "QUOTE",  "RAY", "REAL",
+            "P/E", "PER", "PLAY", "POST", "PRICE", "QUOTE",  "RAY", "REAL", "CASH",
             "S", "SAFE", "SAT", "SAY", "SEE", "SELF", "SELL", "SHARE", "SO", "SOLD", "STOCK", 
-            "T", "THE", "TICKER", "TRADE", "TSLA", "TWO","UP", "USE",
+            "T", "THE", "TICKER", "TRADE", "TSLA", "TWO","UP", "USE", "EU", "NEXT", "HIT", "FAST",
             "VALUE", "VS","WAY", "WELL", "WHO","XP","YIELD", "YOU"));
 
     @PostConstruct
@@ -184,14 +184,13 @@ public class ScrapRepo {
                 // Skip words with mixed letters and numbers
                 if (!word.substring(1).matches(".*\\d+.*") && validTickersSet.contains(processed)
                         && processed.length() <= 5) {
-                    System.out.println("filterTicker >>>>>>>> Found ticker: " + processed + "in text: " + text);
                     return processed; // best case for exact match
                 }
             }
         }
         // word score counter
         Map<String, Integer> tickerScores = new HashMap<>();
-
+    
         for (String word : words) {
             // Skip words that contain any digits
             if (word.matches(".*\\d+.*")) {
@@ -240,14 +239,14 @@ public class ScrapRepo {
                 }
             }
             score += Math.min(wordFrequency - 1, 3);
-
+    
             // Add to scores map
             tickerScores.put(potentialTicker, score);
         }
         // Return the ticker with the highest score
         String bestTicker = null;
         int highestScore = 0;
-
+    
         for (Map.Entry<String, Integer> entry : tickerScores.entrySet()) {
             if (entry.getValue() > highestScore) {
                 highestScore = entry.getValue();
@@ -256,11 +255,11 @@ public class ScrapRepo {
         }
         // Only return if the score> 3
         if (highestScore >= 3) {
-            System.out.println("filterTicker >>>>>>>> Found ticker: " + bestTicker + "in text: " + text
+            System.out.println(" Found ticker: " + bestTicker + " in text: " + text
                     + " with score: " + highestScore);
             return bestTicker;
         } else {
-            System.out.println("filterTicker >>>>>>>> No ticker found in text: " + text);
+            System.out.println(" No ticker found in text: " + text);
             return null;
         }
     }

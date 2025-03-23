@@ -31,8 +31,8 @@ public class ScrapService {
     return mongoRepo.getTickerCounts(timeframe);
    }
 
-  public List<ScrapedPost> getRecentPosts(String ticker){
-    return mongoRepo.getRecentPosts(ticker);
+  public List<ScrapedPost> getRecentPosts(String ticker, String timeframe){
+    return mongoRepo.getRecentPosts(ticker, timeframe);
   }
 
   public void updateDailyTickerCounts() {
