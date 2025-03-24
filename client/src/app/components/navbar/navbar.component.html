@@ -55,7 +55,7 @@
               <i class="ti ti-dashboard"></i> Dashboard
             </a>
           </li>
-          @if (loginStatus) {
+          @if (loginStatus | async) {
           <li class="nav-item">
             <a class="nav-link" routerLink="/watchlist" routerLinkActive="active">
               <span data-feather="list"></span>

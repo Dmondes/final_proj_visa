@@ -24,7 +24,7 @@ export class TrendingComponent implements OnInit {
   // Page properties
   currentPage = 1;
   itemsPerPage = 10;
-  totalPages = 1;
+  totalPages = 0;
 
   private stockService = inject(StockService);
   private userService = inject(UserService);

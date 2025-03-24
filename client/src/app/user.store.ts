@@ -1,7 +1,6 @@
 import { Injectable } from "@angular/core";
 import { ComponentStore } from "@ngrx/component-store";
 import { User, UserState } from "./model/user";
-import { UserService } from "./services/user.service";
 
 const INIT_STATE: UserState = {
     currentUser: null,
