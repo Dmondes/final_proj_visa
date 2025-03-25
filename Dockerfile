@@ -1,26 +1,34 @@
 # Stage 1: Build Angular Frontend
-FROM node:18 AS ngbuild
+FROM node:22 AS ngbuild
 
 WORKDIR /app/client
 
-# Copy the entire client directory
-COPY client/ ./
+# Install Angular CLI globally
+RUN npm install -g @angular/cli@19.2.1
+
+# Copy ONLY necessary files for npm install (for caching)
+COPY client/package*.json ./
+COPY client/angular.json ./
+COPY client/tsconfig*.json ./
+
+# Copy the entire source code
+COPY client/src ./src
 
 # Install dependencies
-RUN npm install
+RUN npm ci
 
-# Install Angular CLI matching the project version
-RUN npm install -g @angular/cli@19.1.8
+# Make the build script executable
+RUN if [ -f src/build.sh ]; then \
+    sed -i 's/\r$//' src/build.sh && \
+    chmod +x src/build.sh; \
+    fi
 
-# Build in development mode to bypass strict production checks
-RUN echo "Building Angular application..." && \
-    ng build --configuration=development --output-path=dist/client/browser
-
-# Show build output for debugging
-RUN echo "Checking build output:" && \
-    ls -la dist/ || echo "dist/ not found" && \
-    ls -la dist/client/ || echo "dist/client/ not found" && \
-    ls -la dist/client/browser/ || echo "dist/client/browser/ not found"
+# Run the custom build script if it exists else ng build
+RUN if [ -f src/build.sh ]; then \
+    bash ./src/build.sh; \
+    else \
+    ng build; \
+    fi
 
 # Stage 2: Build Spring Boot Backend
 FROM openjdk:23 AS javabuild
@@ -33,7 +41,7 @@ COPY server/.mvn/ .mvn/
 COPY server/mvnw .
 COPY server/src ./src
 
-COPY --from=ngbuild /app/client/dist/client/browser/ ./src/main/resources/static
+COPY --from=ngbuild /app/client/dist/client/browser ./src/main/resources/static
 
 # Build Spring Boot application
 RUN chmod a+x mvnw
