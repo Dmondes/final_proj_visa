@@ -1,7 +1,7 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { BehaviorSubject, firstValueFrom, from, Observable } from 'rxjs';
-import { User, UserState } from '../model/user';
+import { PriceAlert, User, UserState } from '../model/user';
 import { UserStore } from '../user.store';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { tap, switchMap, catchError } from 'rxjs/operators';
@@ -195,6 +195,99 @@ export class UserService {
     } catch (error) {
       this.userStore.setCurrentUser(currentUser);
       console.error("Error removing from watchlist:", error);
+      throw error;
+    }
+  }
+
+  async setPriceAlert(email: string, ticker: string, targetPrice: number, condition: 'above' | 'below'): Promise<void> {
+    // Get current user from the store
+    const currentUser = await firstValueFrom(this.userStore.currentUser$);
+    if (!currentUser) {
+      throw new Error('User not logged in.');
+    }
+
+    // Create the alert
+    const alert: PriceAlert = {
+      ticker,
+      targetPrice,
+      condition: condition || 'above',
+      createdAt: Date.now()
+    };
+
+    // Update local store
+    const updatedAlerts = { ...(currentUser.priceAlerts || {}) };
+    updatedAlerts[ticker] = alert;
+    
+    this.userStore.setCurrentUser({ 
+      ...currentUser, 
+      priceAlerts: updatedAlerts 
+    });
+
+    try {
+      const headers = await this.getAuthHeaders();
+      await firstValueFrom(this.http.post(`${this.userUrl}/user/price-alert/set`, {
+        ticker,
+        targetPrice,
+        condition
+      }, {
+        params: { email },
+        headers,
+        responseType: 'text'
+      }));
+    } catch (error) {
+      // Rollback on error
+      this.userStore.setCurrentUser(currentUser);
+      console.error("Error setting price alert:", error);
+      throw error;
+    }
+  }
+
+  async removePriceAlert(email: string, ticker: string): Promise<void> {
+    // Get current user from the store
+    const currentUser = await firstValueFrom(this.userStore.currentUser$);
+    if (!currentUser) {
+      throw new Error('User not logged in.');
+    }
+
+    // Remove from local state
+    if (!currentUser.priceAlerts || !currentUser.priceAlerts[ticker]) {
+      return; // Nothing to remove
+    }
+
+    const updatedAlerts = { ...currentUser.priceAlerts };
+    delete updatedAlerts[ticker];
+    
+    this.userStore.setCurrentUser({ 
+      ...currentUser, 
+      priceAlerts: updatedAlerts 
+    });
+
+    try {
+      const headers = await this.getAuthHeaders();
+      await firstValueFrom(this.http.post(`${this.userUrl}/user/price-alert/remove`, null, {
+        params: { email, ticker },
+        headers,
+        responseType: 'text'
+      }));
+    } catch (error) {
+      // Rollback on error
+      this.userStore.setCurrentUser(currentUser);
+      console.error("Error removing price alert:", error);
+      throw error;
+    }
+  }
+
+  async updateFCMToken(email: string, token: string): Promise<void> {
+    try {
+      const headers = await this.getAuthHeaders();
+      await firstValueFrom(this.http.post(`${this.userUrl}/user/fcm-token`, { token }, {
+        params: { email },
+        headers,
+        responseType: 'text'
+      }));
+      console.log('FCM token saved on server');
+    } catch (error) {
+      console.error('Error saving FCM token on server:', error);
       throw error;
     }
   }

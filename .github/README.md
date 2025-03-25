@@ -12,15 +12,15 @@ The CI workflow (`ci.yml`) runs on each push to the main branch and pull request
 2. Sets up Docker Buildx
 3. Builds the Docker image to verify it builds successfully
 
-### Continuous Deployment (CD)
+### Continuous Deployment (CD) 
 
-The CD workflow (`cd.yml`) runs on each push to the main branch and can also be triggered manually. It:
+The CD workflow (`cd.yml`) runs on each push to the main branch. It:
 
 1. Checks out the code
 2. Sets up Docker Buildx
 3. Installs the Railway CLI
-4. Logs in to Railway using the stored token
-5. Deploys the application to Railway
+4. Deploys the application to Railway
+CD is a bit redundant due to Railway's auto-deployment.
 
 ## Required Secrets
 

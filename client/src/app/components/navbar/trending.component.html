@@ -40,7 +40,14 @@
           </marquee>
         </div>
 
-        @if (trendingStocks?.length) {
+        @if (isLoading) {
+          <div class="text-center my-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading trending stocks...</p>
+          </div>
+        } @else if (trendingStocks?.length) {
           <div class="table-responsive">
             <table class="table table-hover">
               <thead>
@@ -87,37 +94,46 @@
           </div>
         }
         
-        @if (recentPosts?.length && selectedTicker) {
+        @if (selectedTicker) {
           <div class="mt-4">
             <div class="card">
               <div class="card-header">
                 <h5>Recent Posts for {{ selectedTicker }}</h5>
               </div>
               <div class="card-body">
-                <div class="list-group">
-                  @for (post of recentPosts; track post.postUrl) {
-                    <a [href]="post.postUrl" target="_blank" rel="noopener noreferrer" class="list-group-item list-group-item-action flex-column align-items-start">
-                      <div class="d-flex w-100 justify-content-between">
-                        <h6 class="mb-1">{{ post.title }}</h6>
-                        <small>{{ post.createdTime | date:'medium' }}</small>
-                      </div>
-                      <div class="d-flex flex-wrap">
-                        <small class="me-2"><i class="bi bi-arrow-up me-1"></i>Score: {{ post.score }}</small>
-                        <small class="me-2"><i class="bi bi-percent me-1"></i>Upvote Ratio: {{ post.upvoteRatio }}</small>
-                        <small class="me-2"><i class="bi bi-chat-dots me-1"></i>Comments: {{ post.numComments }}</small>
-                        <small class="me-2"><i class="bi bi-tag me-1"></i>{{ post.flairText || 'No Flair' }}</small>
-                        <small><i class="bi bi-reddit me-1"></i>r/{{ post.subReddit }}</small>
-                      </div>
-                    </a>
-                  }
-                </div>
+                @if (isLoadingPosts) {
+                  <div class="text-center my-3">
+                    <div class="spinner-border text-primary" role="status">
+                      <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Loading recent posts for {{ selectedTicker }}...</p>
+                  </div>
+                } @else if (recentPosts?.length) {
+                  <div class="list-group">
+                    @for (post of recentPosts; track post.postUrl) {
+                      <a [href]="post.postUrl" target="_blank" rel="noopener noreferrer" class="list-group-item list-group-item-action flex-column align-items-start">
+                        <div class="d-flex w-100 justify-content-between">
+                          <h6 class="mb-1">{{ post.title }}</h6>
+                          <small>{{ post.createdTime | date:'medium' }}</small>
+                        </div>
+                        <div class="d-flex flex-wrap">
+                          <small class="me-2"><i class="bi bi-arrow-up me-1"></i>Score: {{ post.score }}</small>
+                          <small class="me-2"><i class="bi bi-percent me-1"></i>Upvote Ratio: {{ post.upvoteRatio }}</small>
+                          <small class="me-2"><i class="bi bi-chat-dots me-1"></i>Comments: {{ post.numComments }}</small>
+                          <small class="me-2"><i class="bi bi-tag me-1"></i>{{ post.flairText || 'No Flair' }}</small>
+                          <small><i class="bi bi-reddit me-1"></i>r/{{ post.subReddit }}</small>
+                        </div>
+                      </a>
+                    }
+                  </div>
+                } @else {
+                  <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    No recent posts available for {{ selectedTicker }}.
+                  </div>
+                }
               </div>
             </div>
-          </div>
-        } @else if (selectedTicker) {
-          <div class="alert alert-info mt-4">
-            <i class="bi bi-info-circle me-2"></i>
-            No recent posts available for {{ selectedTicker }}.
           </div>
         }
       </div>

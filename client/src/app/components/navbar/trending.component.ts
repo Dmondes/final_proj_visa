@@ -20,6 +20,8 @@ export class TrendingComponent implements OnInit {
   timeFrame = '24h';
   recentPosts: any[] | undefined;
   selectedTicker!: string;
+  isLoading: boolean = false;
+  isLoadingPosts: boolean = false;
 
   // Page properties
   currentPage = 1;
@@ -41,24 +43,41 @@ export class TrendingComponent implements OnInit {
   }
 
   loadDataByTimeframe(timeframe: string) {
-    this.stockService.getTrendingStocks(timeframe).subscribe(data => { //pass timeframe 
-      
-      this.trendingStocks = Object.entries(data).sort((a: any, b: any) => b[1] - a[1]);
-      this.lastUpdate = new Date();
-      this.recentPosts = [];
-      this.selectedTicker = "";
+    this.isLoading = true;
+    this.stockService.getTrendingStocks(timeframe).subscribe({
+      next: (data) => {
+        this.trendingStocks = Object.entries(data).sort((a: any, b: any) => b[1] - a[1]);
+        this.lastUpdate = new Date();
+        this.recentPosts = [];
+        this.selectedTicker = "";
 
-      // Calculate total pages
-      this.totalPages = Math.ceil((this.trendingStocks?.length || 0) / this.itemsPerPage);
-      this.currentPage = 1; // Reset to first page when loading new data
+        // Calculate total pages
+        this.totalPages = Math.ceil((this.trendingStocks?.length || 0) / this.itemsPerPage);
+        this.currentPage = 1; // Reset to first page when loading new data
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error fetching trending stocks:', err);
+        this.isLoading = false;
+      }
     });
   }
 
   showRecentPosts(ticker: string) {
     this.selectedTicker = ticker;
+    this.isLoadingPosts = true;
+    this.recentPosts = [];
+    
     // Pass the selected timeframe
-    this.stockService.getRecentPosts(ticker, this.timeFrameControl.value!).subscribe(posts => {
-      this.recentPosts = posts;
+    this.stockService.getRecentPosts(ticker, this.timeFrameControl.value!).subscribe({
+      next: (posts) => {
+        this.recentPosts = posts;
+        this.isLoadingPosts = false;
+      },
+      error: (err) => {
+        console.error(`Error fetching posts for ${ticker}:`, err);
+        this.isLoadingPosts = false;
+      }
     });
   }
 

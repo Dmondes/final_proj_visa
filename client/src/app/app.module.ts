@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
-import { ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
@@ -10,6 +10,7 @@ import { NavbarComponent } from './components/navbar/navbar.component';
 import { AboutComponent } from './components/navbar/about.component';
 import { LoginComponent } from './components/user/login.component';
 import { RegisterComponent } from './components/user/register.component';
+import { NotificationSettingsComponent } from './components/user/notification-settings.component';
 import { TrendingComponent } from './components/navbar/trending.component';
 import { WatchlistComponent } from './components/stocks/watchlist.component';
 import { NgbModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
@@ -18,6 +19,7 @@ import { LocationStrategy, HashLocationStrategy } from '@angular/common'; //hash
 import { UserStore } from './user.store';
 import { AngularFireModule } from '@angular/fire/compat';
 import { AngularFireAuthModule } from '@angular/fire/compat/auth';
+import { AngularFireMessagingModule } from '@angular/fire/compat/messaging';
 import { environment } from '../environments/environment';
 
 @NgModule({
@@ -28,6 +30,7 @@ import { environment } from '../environments/environment';
     AboutComponent,
     LoginComponent,
     RegisterComponent,
+    NotificationSettingsComponent,
     TrendingComponent,
     WatchlistComponent,
     StockComponent
@@ -36,8 +39,10 @@ import { environment } from '../environments/environment';
     BrowserModule,
     AppRoutingModule,
     ReactiveFormsModule,
+    FormsModule, // Add FormsModule for ngModel
     AngularFireModule.initializeApp(environment.firebase),
     AngularFireAuthModule,
+    AngularFireMessagingModule,
     NgbModule,
     NgbPaginationModule
     

@@ -1,12 +1,13 @@
 package sg.edu.nus.iss.stonks.model;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-
 
 public class User {
     private Long id;
@@ -18,6 +19,8 @@ public class User {
     @Size(min = 6, max = 20, message = "Password must be between 6 and 20 characters")
     private String password;
     private Set<String> watchlist = new HashSet<>();
+    private Map<String, PriceAlert> priceAlerts = new HashMap<>();
+    private String fcmToken;
 
     public User() {
     }
@@ -61,6 +64,19 @@ public class User {
         this.watchlist = watchlist;
     }
 
-    
+    public Map<String, PriceAlert> getPriceAlerts() {
+        return priceAlerts;
+    }
 
+    public void setPriceAlerts(Map<String, PriceAlert> priceAlerts) {
+        this.priceAlerts = priceAlerts;
+    }
+
+    public String getFcmToken() {
+        return fcmToken;
+    }
+
+    public void setFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
+    }
 }

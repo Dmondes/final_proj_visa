@@ -1,7 +1,9 @@
 import { Component, inject, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Subscription, firstValueFrom } from 'rxjs';
 import { StockService } from '../../services/stock.service';
+import { UserService } from '../../services/user.service';
+import { UserStore } from '../../user.store';
 
 import { Title } from '@angular/platform-browser';
 import { StockPrice } from '../../model/stockPrice';
@@ -21,7 +23,12 @@ export class StockComponent implements OnInit, OnDestroy {
 
   private route = inject(ActivatedRoute);
   private stockService = inject(StockService);
+  private userService = inject(UserService);
+  private userStore = inject(UserStore);
+  private router = inject(Router);
   private title = inject(Title);
+  
+  loginStatus = this.userStore.isLoggedIn$;
 
 
   ngOnInit(): void {
@@ -59,6 +66,22 @@ export class StockComponent implements OnInit, OnDestroy {
   getChangeIcon(): string {
     if (!this.stock) return '';
     return this.stock.d > 0 ? 'ti ti-trending-up' : 'ti ti-trending-down';
+  }
+
+  async addToWatchlist(ticker: string) {
+    try {
+      const user = await firstValueFrom(this.userService.currentUser);
+
+      if (user) {
+        await this.userService.addToWatchlist(user.email, ticker);
+        alert(`${ticker} added to watchlist!`); // Success message
+      } else {
+        this.router.navigate(['/login']); // Redirect to login if not logged in
+      }
+    } catch (error) {
+      console.error(`Error adding ${ticker} to watchlist:`, error);
+      alert(`Error adding ${ticker} to watchlist. Please try again.`);
+    }
   }
 
   ngOnDestroy(): void {

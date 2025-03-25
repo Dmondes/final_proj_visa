@@ -34,6 +34,7 @@
           <a ngbDropdownItem routerLink="/signup"><i class="bi bi-person-plus"></i> Register</a>
         }
         @if (loginStatus | async) {
+          <a ngbDropdownItem routerLink="/notifications"><i class="bi bi-bell"></i> Notification Settings</a>
           <a ngbDropdownItem href="#"><i class="bi bi-gear"></i> Account Settings</a>
           <div class="dropdown-divider"></div>
           <a ngbDropdownItem (click)="logout()"><i class="bi bi-box-arrow-right"></i> Sign Out</a>
@@ -60,6 +61,12 @@
             <a class="nav-link" routerLink="/watchlist" routerLinkActive="active">
               <span data-feather="list"></span>
               <i class="bi bi-list-ul"></i> Watchlist
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/notifications" routerLinkActive="active">
+              <span data-feather="bell"></span>
+              <i class="bi bi-bell"></i> Notifications
             </a>
           </li>
         }

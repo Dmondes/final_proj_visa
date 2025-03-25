@@ -1,6 +1,9 @@
 <div class="card">
-  <div class="card-header">
+  <div class="card-header d-flex justify-content-between align-items-center">
     <h5>My Watchlist</h5>
+    <button class="btn btn-sm btn-primary" (click)="refreshPrices()">
+      <i class="bi bi-arrow-repeat"></i> Refresh Prices
+    </button>
   </div>
   <div class="card-body">
     @if (watchlist | async; as list) {
@@ -9,17 +12,56 @@
           <thead>
             <tr>
               <th>Ticker</th>
-              <th>Action</th>
+              <th>Current Price</th>
+              <th>Price Alert</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             @for (ticker of watchlist | async; track ticker) {
               <tr>
-                <td><strong>{{ ticker }}</strong></td>
                 <td>
-                  <button class="btn btn-sm btn-danger" (click)="removeFromWatchlist(ticker)">
-                    <i class="bi bi-trash"></i> Remove
-                  </button>
+                  <strong class="cursor-pointer" (click)="navigateToStock(ticker)" style="cursor: pointer;">
+                    {{ ticker }}
+                  </strong>
+                </td>
+                <td>
+                  <span *ngIf="stockPrices[ticker]">${{ stockPrices[ticker]?.c?.toFixed(2) }}</span>
+                  <span *ngIf="!stockPrices[ticker]" class="text-muted">Loading...</span>
+                </td>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <div class="input-group input-group-sm">
+                      <input type="number" class="form-control" placeholder="Target price" 
+                             [(ngModel)]="alertPrices[ticker]" 
+                             [ngModelOptions]="{standalone: true}">
+                      <select class="form-select" [(ngModel)]="alertConditions[ticker]" [ngModelOptions]="{standalone: true}">
+                        <option value="above">Above</option>
+                        <option value="below">Below</option>
+                      </select>
+                      <button class="btn btn-outline-primary" 
+                              [disabled]="!alertPrices[ticker]"
+                              (click)="setPriceAlert(ticker, alertPrices[ticker], alertConditions[ticker])">
+                        Set
+                      </button>
+                    </div>
+                  </div>
+                  <div *ngIf="priceAlerts[ticker]" class="alert alert-info p-1 mt-1 mb-0 small">
+                    Alert when price goes {{ priceAlerts[ticker].condition }} ${{ priceAlerts[ticker].targetPrice?.toFixed(2) }}
+                    <button class="btn btn-sm btn-link p-0 ms-2" (click)="removePriceAlert(ticker)">
+                      <i class="bi bi-x-circle"></i>
+                    </button>
+                  </div>
+                </td>
+                <td>
+                  <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-primary" (click)="navigateToStock(ticker)">
+                      <i class="bi bi-graph-up"></i> View
+                    </button>
+                    <button class="btn btn-sm btn-danger" (click)="removeFromWatchlist(ticker)">
+                      <i class="bi bi-trash"></i> Remove
+                    </button>
+                  </div>
                 </td>
               </tr>
             }

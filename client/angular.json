@@ -35,7 +35,8 @@
               },
               "src/assets",
               "src/manifest.json",
-              "src/service-worker.js"
+              "src/service-worker.js",
+              "src/firebase-messaging-sw.js"
             ],
             "styles": [
               "node_modules/bootstrap/dist/css/bootstrap.min.css",

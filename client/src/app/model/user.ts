@@ -2,6 +2,7 @@ export interface User {
     id: number;
     email: string;
     watchlist: Set<string>;
+    priceAlerts?: { [ticker: string]: PriceAlert };
 }
 
 export interface UserState{
@@ -9,4 +10,11 @@ export interface UserState{
     isLoggedIn: boolean;
     isLoading: boolean;
     error: string | null;
+}
+
+export interface PriceAlert {
+    ticker: string;
+    targetPrice: number;
+    condition: 'above' | 'below';
+    createdAt: number;
 }
