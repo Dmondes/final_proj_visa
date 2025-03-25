@@ -59,24 +59,36 @@ public class UserController {
     @GetMapping("/user/{email}")
     public ResponseEntity<User> getUserByEmail(@PathVariable String email, 
                                                @RequestHeader("Authorization") String idToken) {
+        System.out.println("Received request for user: " + email);
         try {
             // Verify Firebase token
             if (idToken != null && idToken.startsWith("Bearer ")) {
                 idToken = idToken.substring(7);
-                String uid = firebaseAuthConfig.verifyToken(idToken);
-                System.out.println("Token:" + uid);
-                // Token is valid, proceed with fetching user data
-                User user = userService.findByEmail(email);
-                if (user != null) {
-                    return ResponseEntity.ok(user);
-                } else {
-                    return ResponseEntity.notFound().build();
+                try {
+                    String uid = firebaseAuthConfig.verifyToken(idToken);
+                    System.out.println("Firebase token verified. UID: " + uid);
+                    
+                    // Token is valid, proceed with fetching user data
+                    User user = userService.findByEmail(email);
+                    if (user != null) {
+                        System.out.println("User found: " + user.getEmail());
+                        return ResponseEntity.ok(user);
+                    } else {
+                        System.out.println("User not found: " + email);
+                        return ResponseEntity.notFound().build();
+                    }
+                } catch (FirebaseAuthException e) {
+                    System.err.println("Firebase authentication error for user " + email + ": " + e.getMessage());
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
                 }
             } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+                System.err.println("Invalid Authorization header for user " + email);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
             }
-        } catch (FirebaseAuthException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } catch (Exception e) {
+            System.err.println("Unexpected error processing request for user " + email + ": " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 

@@ -131,20 +131,50 @@ export class UserService {
   }
 
   private async getAuthHeaders(): Promise<HttpHeaders> {
-    const user = await firstValueFrom(this.auth.authState);
-    if (!user) {
-      throw new Error('User not authenticated');
+    try {
+      const user = await firstValueFrom(this.auth.authState);
+      if (!user) {
+        console.error('No authenticated user found');
+        throw new Error('User not authenticated');
+      }
+      
+      try {
+        const token = await user.getIdToken(true); // Force token refresh
+        return new HttpHeaders().set('Authorization', `Bearer ${token}`);
+      } catch (tokenError) {
+        console.error('Error getting authentication token:', tokenError);
+        throw new Error('Failed to get authentication token');
+      }
+    } catch (error) {
+      console.error('Authentication error:', error);
+      throw error;
     }
-    
-    const token = await user.getIdToken();
-    return new HttpHeaders().set('Authorization', `Bearer ${token}`);
   }
 
   async getUserByEmail(email: string): Promise<User> {
-    const headers = await this.getAuthHeaders();
-    return await firstValueFrom(
-      this.http.get<User>(`${this.userUrl}/user/${email}`, { headers })
-    ) as User;
+    try {
+      const headers = await this.getAuthHeaders();
+      return await firstValueFrom(
+        this.http.get<User>(`${this.userUrl}/user/${email}`, { headers })
+          .pipe(
+            catchError(error => {
+              console.error(`Error getting user data for ${email}:`, error);
+              if (error.status === 500) {
+                console.error('Server error (500). This could be due to database connection issues or server configuration.');
+              } else if (error.status === 401) {
+                console.error('Authentication error (401). Token may be invalid or expired.');
+                // Force logout on authentication error
+                this.userStore.setLoggedIn(false);
+                this.userStore.setCurrentUser(null);
+              }
+              throw error;
+            })
+          )
+      ) as User;
+    } catch (error) {
+      console.error('Failed to get user data:', error);
+      throw error;
+    }
   }
 
   async addToWatchlist(email: string, ticker: string): Promise<void> {

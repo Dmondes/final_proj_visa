@@ -51,44 +51,66 @@ public class MysqlRepo {
     }
 
     public User findByEmail(String email) { // also get User
-        if (emailExist(email)) {
-            SqlRowSet rs = jdbcTemplate.queryForRowSet(SQL_FIND_BY_EMAIL, email);
-            if (rs.next()) {
-
-                User user = new User();
-                user.setId(rs.getLong("id"));
-                user.setEmail(rs.getString("email"));
-                user.setPassword(rs.getString("password"));
-
-                // Parse watchlist
-                String watchlistStr = rs.getString("watchlist");
-                Set<String> watchlist = (watchlistStr != null && !watchlistStr.isEmpty())
-                        ? new HashSet<>(Arrays.asList(watchlistStr.split(",")))
-                        : new HashSet<>();
-                user.setWatchlist(watchlist);
-
-                // Parse price alerts
-                String priceAlertsStr = rs.getString("price_alerts");
-                Map<String, PriceAlert> priceAlerts = new HashMap<>();
-                if (priceAlertsStr != null && !priceAlertsStr.isEmpty()) {
-                    String[] alertsArray = priceAlertsStr.split(";");
-                    for (String alertStr : alertsArray) {
-                        PriceAlert alert = PriceAlert.fromString(alertStr);
-                        if (alert != null) {
-                            priceAlerts.put(alert.getTicker(), alert);
+        try {
+            if (emailExist(email)) {
+                SqlRowSet rs = jdbcTemplate.queryForRowSet(SQL_FIND_BY_EMAIL, email);
+                if (rs.next()) {
+                    try {
+                        User user = new User();
+                        user.setId(rs.getLong("id"));
+                        user.setEmail(rs.getString("email"));
+                        user.setPassword(rs.getString("password"));
+    
+                        // Parse watchlist
+                        String watchlistStr = rs.getString("watchlist");
+                        Set<String> watchlist = new HashSet<>();
+                        if (watchlistStr != null && !watchlistStr.isEmpty()) {
+                            try {
+                                watchlist = new HashSet<>(Arrays.asList(watchlistStr.split(",")));
+                            } catch (Exception e) {
+                                System.err.println("Error parsing watchlist for user " + email + ": " + e.getMessage());
+                                // Continue with empty watchlist
+                            }
                         }
+                        user.setWatchlist(watchlist);
+    
+                        // Parse price alerts
+                        String priceAlertsStr = rs.getString("price_alerts");
+                        Map<String, PriceAlert> priceAlerts = new HashMap<>();
+                        if (priceAlertsStr != null && !priceAlertsStr.isEmpty()) {
+                            try {
+                                String[] alertsArray = priceAlertsStr.split(";");
+                                for (String alertStr : alertsArray) {
+                                    if (alertStr != null && !alertStr.trim().isEmpty()) {
+                                        PriceAlert alert = PriceAlert.fromString(alertStr.trim());
+                                        if (alert != null) {
+                                            priceAlerts.put(alert.getTicker(), alert);
+                                        }
+                                    }
+                                }
+                            } catch (Exception e) {
+                                System.err.println("Error parsing price alerts for user " + email + ": " + e.getMessage());
+                                // Continue with empty price alerts
+                            }
+                        }
+                        user.setPriceAlerts(priceAlerts);
+    
+                        // Get FCM token
+                        String fcmToken = rs.getString("fcm_token");
+                        user.setFcmToken(fcmToken);
+    
+                        return user;
+                    } catch (Exception e) {
+                        System.err.println("Error building user object for " + email + ": " + e.getMessage());
                     }
                 }
-                user.setPriceAlerts(priceAlerts);
-
-                // Get FCM token
-                String fcmToken = rs.getString("fcm_token");
-                user.setFcmToken(fcmToken);
-
-                return user;
             }
+            return null;
+        } catch (Exception e) {
+            System.err.println("Database error when finding user by email " + email + ": " + e.getMessage());
+            e.printStackTrace();
+            return null;
         }
-        return null;
     }
 
     public void createUser(String email, String password) {
