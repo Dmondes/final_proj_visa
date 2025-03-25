@@ -77,9 +77,15 @@ export class NotificationService {
    */
   async deleteToken(): Promise<boolean> {
     try {
-      await firstValueFrom(this.messaging.deleteToken());
-      console.log('Token deleted successfully');
-      return true;
+      // First get the current token
+      const token = await firstValueFrom(this.messaging.getToken);
+      if (token) {
+        // Then delete it
+        await firstValueFrom(this.messaging.deleteToken(token));
+        console.log('Token deleted successfully');
+        return true;
+      }
+      return false;
     } catch (error) {
       console.error('Failed to delete token:', error);
       return false;
