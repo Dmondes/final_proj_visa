@@ -114,7 +114,7 @@ export class WatchlistComponent implements OnInit, OnDestroy {
     } catch (error) {
       console.error(`Error setting price alert for ${ticker}:`, error);
       delete this.priceAlerts[ticker];
-      alert(`Error setting price alert for ${ticker}. Please try again.`);
+      window.alert(`Error setting price alert for ${ticker}. Please try again.`);
     }
   }
   
@@ -134,7 +134,7 @@ export class WatchlistComponent implements OnInit, OnDestroy {
     } catch (error) {
       console.error(`Error removing price alert for ${ticker}:`, error);
       this.priceAlerts[ticker] = alertCopy;
-      alert(`Error removing price alert for ${ticker}. Please try again.`);
+      window.alert(`Error removing price alert for ${ticker}. Please try again.`);
     }
   }
   
@@ -186,7 +186,7 @@ export class WatchlistComponent implements OnInit, OnDestroy {
         delete this.stockPrices[ticker];
       } catch (error) {
         console.error(`Error removing ${ticker} from watchlist:`, error);
-        alert(`Error removing ${ticker} from watchlist. Please try again.`);
+        window.alert(`Error removing ${ticker} from watchlist. Please try again.`);
       }
     }
   }

@@ -11,11 +11,12 @@ COPY client/package*.json ./
 COPY client/angular.json ./
 COPY client/tsconfig*.json ./
 
+# Install dependencies first (for better caching)
+RUN npm ci --verbose
+
 # Copy the entire source code
 COPY client/src ./src
-
-# Install dependencies
-RUN npm ci --verbose
+COPY client/public ./public
 
 # Make the build script executable
 RUN if [ -f src/build.sh ]; then \
@@ -25,9 +26,27 @@ RUN if [ -f src/build.sh ]; then \
 
 # Run the custom build script if it exists else ng build
 RUN if [ -f src/build.sh ]; then \
-    bash ./src/build.sh; \
+    echo "Using custom build script..." && \
+    bash ./src/build.sh || { echo "Build script failed"; exit 1; }; \
     else \
+    echo "Using default ng build..." && \
     ng build; \
+    fi
+
+# Verify build output exists
+RUN ls -la dist/ && \
+    if [ -d "dist/client" ]; then \
+      ls -la dist/client/; \
+      if [ -d "dist/client/browser" ]; then \
+        echo "Build succeeded with expected output"; \
+        ls -la dist/client/browser/; \
+      else \
+        echo "ERROR: Expected dist/client/browser directory not found"; \
+        exit 1; \
+      fi \
+    else \
+      echo "ERROR: dist/client directory not found"; \
+      exit 1; \
     fi
 
 # Stage 2: Build Spring Boot Backend

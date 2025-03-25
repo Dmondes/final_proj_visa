@@ -21,44 +21,81 @@
             @for (ticker of watchlist | async; track ticker) {
               <tr>
                 <td>
-                  <strong class="cursor-pointer" (click)="navigateToStock(ticker)" style="cursor: pointer;">
+                  <strong
+                    class="cursor-pointer"
+                    (click)="navigateToStock(ticker)"
+                    style="cursor: pointer"
+                  >
                     {{ ticker }}
                   </strong>
                 </td>
                 <td>
-                  <span *ngIf="stockPrices[ticker]">${{ stockPrices[ticker]?.c?.toFixed(2) }}</span>
-                  <span *ngIf="!stockPrices[ticker]" class="text-muted">Loading...</span>
+                  @if (stockPrices[ticker]) {
+                    <span>${{ stockPrices[ticker].c.toFixed(2) }}</span>
+                  } @else {
+                    <span class="text-muted">Loading...</span>
+                  }
                 </td>
                 <td>
                   <div class="d-flex align-items-center">
                     <div class="input-group input-group-sm">
-                      <input type="number" class="form-control" placeholder="Target price" 
-                             [(ngModel)]="alertPrices[ticker]" 
-                             [ngModelOptions]="{standalone: true}">
-                      <select class="form-select" [(ngModel)]="alertConditions[ticker]" [ngModelOptions]="{standalone: true}">
+                      <input
+                        type="number"
+                        class="form-control"
+                        placeholder="Target price"
+                        [(ngModel)]="alertPrices[ticker]"
+                        [ngModelOptions]="{ standalone: true }"
+                      />
+                      <select
+                        class="form-select"
+                        [(ngModel)]="alertConditions[ticker]"
+                        [ngModelOptions]="{ standalone: true }"
+                      >
                         <option value="above">Above</option>
                         <option value="below">Below</option>
                       </select>
-                      <button class="btn btn-outline-primary" 
-                              [disabled]="!alertPrices[ticker]"
-                              (click)="setPriceAlert(ticker, alertPrices[ticker], alertConditions[ticker])">
+                      <button
+                        class="btn btn-outline-primary"
+                        [disabled]="!alertPrices[ticker]"
+                        (click)="
+                          setPriceAlert(
+                            ticker,
+                            alertPrices[ticker],
+                            alertConditions[ticker]
+                          )
+                        "
+                      >
                         Set
                       </button>
                     </div>
                   </div>
-                  <div *ngIf="priceAlerts[ticker]" class="alert alert-info p-1 mt-1 mb-0 small">
-                    Alert when price goes {{ priceAlerts[ticker].condition }} ${{ priceAlerts[ticker].targetPrice?.toFixed(2) }}
-                    <button class="btn btn-sm btn-link p-0 ms-2" (click)="removePriceAlert(ticker)">
-                      <i class="bi bi-x-circle"></i>
-                    </button>
-                  </div>
+                  @if (priceAlerts[ticker]) {
+                    <div class="alert alert-info p-1 mt-1 mb-0 small">
+                      Alert when price goes
+                      {{ priceAlerts[ticker].condition }} ${{
+                        priceAlerts[ticker].targetPrice.toFixed(2)
+                      }}
+                      <button
+                        class="btn btn-sm btn-link p-0 ms-2"
+                        (click)="removePriceAlert(ticker)"
+                      >
+                        <i class="bi bi-x-circle"></i>
+                      </button>
+                    </div>
+                  }
                 </td>
                 <td>
                   <div class="d-flex gap-2">
-                    <button class="btn btn-sm btn-primary" (click)="navigateToStock(ticker)">
+                    <button
+                      class="btn btn-sm btn-primary"
+                      (click)="navigateToStock(ticker)"
+                    >
                       <i class="bi bi-graph-up"></i> View
                     </button>
-                    <button class="btn btn-sm btn-danger" (click)="removeFromWatchlist(ticker)">
+                    <button
+                      class="btn btn-sm btn-danger"
+                      (click)="removeFromWatchlist(ticker)"
+                    >
                       <i class="bi bi-trash"></i> Remove
                     </button>
                   </div>

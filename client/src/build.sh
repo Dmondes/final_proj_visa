@@ -3,12 +3,28 @@ set -e
 
 echo "Starting Angular build process..."
 
+# Print working directory for debugging
+echo "Current working directory: $(pwd)"
+
+# Run Angular build
 ng build --configuration production
 
 echo "Angular build completed. Updating service worker cache manifest..."
 
 #build output directory
 BUILD_DIR="dist/client/browser"
+
+# Check if build directory exists
+if [ ! -d "$BUILD_DIR" ]; then
+  echo "ERROR: Build output directory '$BUILD_DIR' does not exist!"
+  echo "Contents of dist directory:"
+  ls -la dist/
+  if [ -d "dist/client" ]; then
+    echo "Contents of dist/client directory:"
+    ls -la dist/client/
+  fi
+  exit 1
+fi
 
 # generated files
 MAIN_JS=$(find $BUILD_DIR -name "main-*.js" | xargs basename 2>/dev/null || echo "")
@@ -54,6 +70,16 @@ NEW_PRECACHE_ARRAY="${NEW_PRECACHE_ARRAY}\n  ]"
 # File to update
 SERVICE_WORKER="src/service-worker.js"
 
+# Check if service worker exists
+if [ ! -f "$SERVICE_WORKER" ]; then
+  echo "ERROR: Service worker file '$SERVICE_WORKER' does not exist!"
+  echo "Contents of src directory:"
+  ls -la src/
+  exit 1
+fi
+
+echo "Updating service worker at: $SERVICE_WORKER"
+
 # sed replace the precacheAndRoute array
 cat "$SERVICE_WORKER" | 
   sed -E "/workbox.precaching.precacheAndRoute\(\[/,/\]\);/ c\\
@@ -69,6 +95,12 @@ if [ -n "$SCRIPTS_JS" ]; then echo "- $SCRIPTS_JS"; fi
 
 # Copy service worker to build output
 echo "Copying service worker to build output..."
-cp $SERVICE_WORKER $BUILD_DIR/
+if [ -d "$BUILD_DIR" ]; then
+  cp $SERVICE_WORKER $BUILD_DIR/
+  echo "Service worker copied to $BUILD_DIR"
+else
+  echo "ERROR: Cannot copy service worker - build directory does not exist"
+  exit 1
+fi
 
 echo "Build process completed successfully!"

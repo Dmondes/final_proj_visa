@@ -61,7 +61,9 @@ export class NotificationService {
       console.log('FCM Token:', token);
       
       // Send token to server
-      await this.userService.updateFCMToken(user.email, token);
+      if (user.email && token) {
+        await this.userService.updateFCMToken(user.email, token);
+      }
       
       return token;
     } catch (error) {
@@ -75,7 +77,7 @@ export class NotificationService {
    */
   async deleteToken(): Promise<boolean> {
     try {
-      await this.messaging.deleteToken.toPromise();
+      await firstValueFrom(this.messaging.deleteToken());
       console.log('Token deleted successfully');
       return true;
     } catch (error) {
