@@ -15,4 +15,5 @@ tsconfig.*
 
 src/test
 src/main/resources/nasdaq_tickers.csv
+src/main/resources/serviceAccountKey.json
 src/main/resources/stock.sql

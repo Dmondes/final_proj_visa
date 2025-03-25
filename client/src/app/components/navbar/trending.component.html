@@ -19,7 +19,7 @@
     <div class="card">
       <div class="card-header d-flex justify-content-between align-items-center">
         <h5>
-          <i class="ti ti-trending-up me-1"></i> Trending Stocks 
+          <i class="bi bi-graph-up me-1"></i> Trending Stocks 
           <small class="text-muted">({{ timeFrameControl.value }})</small>
         </h5>
         <div class="d-flex align-items-center">
@@ -58,7 +58,7 @@
                     <td>
                       @if (loginStatus | async) {
                         <button class="btn btn-sm btn-primary" (click)="$event.stopPropagation(); addToWatchlist(stock[0])">
-                          <i class="ti ti-plus"></i> Add to Watchlist
+                          <i class="bi bi-plus"></i> Add to Watchlist
                         </button>
                       }
                     </td>
@@ -67,34 +67,22 @@
               </tbody>
             </table>
             
-            <!-- Pagination Controls -->
-            <nav aria-label="Trending stocks pagination">
-              <ul class="pagination justify-content-center">
-                <li class="page-item" [class.disabled]="currentPage === 1">
-                  <a class="page-link" href="javascript:void(0)" (click)="prevPage()">
-                    <i class="ti ti-chevron-left"></i>
-                  </a>
-                </li>
-                
-                @for (page of getPageNumbers(); track page) {
-                  <li class="page-item" [class.active]="page === currentPage">
-                    <a class="page-link" href="javascript:void(0)" (click)="goToPage(page)">
-                      {{ page }}
-                    </a>
-                  </li>
-                }
-                
-                <li class="page-item" [class.disabled]="currentPage === totalPages">
-                  <a class="page-link" href="javascript:void(0)" (click)="nextPage()">
-                    <i class="ti ti-chevron-right"></i>
-                  </a>
-                </li>
-              </ul>
-            </nav>
+            <!-- NgBootstrap Pagination -->
+            <div class="d-flex justify-content-center mt-3">
+              <ngb-pagination
+                [collectionSize]="trendingStocks?.length || 0"
+                [(page)]="currentPage"
+                [pageSize]="itemsPerPage"
+                [maxSize]="5"
+                [boundaryLinks]="true"
+                [rotate]="true"
+                aria-label="Trending stocks pagination">
+              </ngb-pagination>
+            </div>
           </div>
         } @else {
           <div class="alert alert-warning">
-            <i class="ti ti-alert-circle me-2"></i>
+            <i class="bi bi-exclamation-circle me-2"></i>
             No trending stocks data available.
           </div>
         }
@@ -114,11 +102,11 @@
                         <small>{{ post.createdTime | date:'medium' }}</small>
                       </div>
                       <div class="d-flex flex-wrap">
-                        <small class="me-2"><i class="ti ti-arrow-up me-1"></i>Score: {{ post.score }}</small>
-                        <small class="me-2"><i class="ti ti-percentage me-1"></i>Upvote Ratio: {{ post.upvoteRatio }}</small>
-                        <small class="me-2"><i class="ti ti-message me-1"></i>Comments: {{ post.numComments }}</small>
-                        <small class="me-2"><i class="ti ti-tag me-1"></i>{{ post.flairText || 'No Flair' }}</small>
-                        <small><i class="ti ti-brand-reddit me-1"></i>r/{{ post.subReddit }}</small>
+                        <small class="me-2"><i class="bi bi-arrow-up me-1"></i>Score: {{ post.score }}</small>
+                        <small class="me-2"><i class="bi bi-percent me-1"></i>Upvote Ratio: {{ post.upvoteRatio }}</small>
+                        <small class="me-2"><i class="bi bi-chat-dots me-1"></i>Comments: {{ post.numComments }}</small>
+                        <small class="me-2"><i class="bi bi-tag me-1"></i>{{ post.flairText || 'No Flair' }}</small>
+                        <small><i class="bi bi-reddit me-1"></i>r/{{ post.subReddit }}</small>
                       </div>
                     </a>
                   }
@@ -128,7 +116,7 @@
           </div>
         } @else if (selectedTicker) {
           <div class="alert alert-info mt-4">
-            <i class="ti ti-info-circle me-2"></i>
+            <i class="bi bi-info-circle me-2"></i>
             No recent posts available for {{ selectedTicker }}.
           </div>
         }

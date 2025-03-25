@@ -11,10 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
-// import org.springframework.core.io.ClassPathResource;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+
+// import org.springframework.core.io.ClassPathResource;
 // import java.io.InputStream;
 
 @Configuration
@@ -26,50 +27,44 @@ public class FirebaseAuthConfig {
     @Bean
     public FirebaseAuth firebaseAuth() throws IOException {
         if (FirebaseApp.getApps().isEmpty()) {
-            try {
-                // (InputStream serviceAccount = new
-                // ClassPathResource("serviceAccountKey.json").getInputStream())
+            try  {
+                // (InputStream serviceAccount =
+                // newClassPathResource("serviceAccountKey.json").getInputStream())
+
+                // FirebaseOptions options = FirebaseOptions.builder()
+                //         .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                //         .setProjectId("fintrenduser") 
+                //         .build();
+
                 FirebaseOptions options = FirebaseOptions.builder()
-                        .setCredentials(GoogleCredentials.fromStream(
-                                new ByteArrayInputStream(createFirebaseCredentialsJson().getBytes())))
-                        .setProjectId(env.getProperty("firebase.project.id"))
-                        .build();
+                .setCredentials(GoogleCredentials.fromStream(
+                new ByteArrayInputStream(createFirebaseCredentialsJson().getBytes())))
+                .setProjectId(env.getProperty("firebase.project.id"))
+                .build();
 
                 FirebaseApp.initializeApp(options);
 
-            } catch (IOException e) {
-                // Log the exception properly. Don't just swallow it.
+            } catch (IOException e) { //Fallback to local run for test
                 System.err.println("Error initializing Firebase: " + e.getMessage());
                 e.printStackTrace(); // Print the stack trace for debugging.
-
-                // Fallback for development (optional, but good for local testing)
-                // Remove the fallback if you *only* want to use the service account.
                 try {
                     FirebaseOptions fallbackOptions = FirebaseOptions.builder()
-                            .setProjectId("fintrenduser") // Set project ID for fallback as well.
-                            // .setApplicationId("1:431029665236:web:d922b37d16b2a9bda6aa41") // Usually not
-                            // needed with Admin SDK
+                            .setProjectId("fintrenduser") 
                             .build();
-                    FirebaseApp.initializeApp(fallbackOptions, "fallbackApp"); // Use a different name for the fallback
-                                                                               // app
+                    FirebaseApp.initializeApp(fallbackOptions, "fallbackApp"); 
                 } catch (Exception fallbackException) {
                     System.err.println("Error initializing Firebase fallback: " + fallbackException.getMessage());
                     fallbackException.printStackTrace();
-                    throw fallbackException; // Re-throw to halt application startup if initialization fails
+                    throw fallbackException;
                 }
             }
         }
-
-        // Return the *default* instance if using service account, otherwise return
-        // fallback.
         return (FirebaseApp.getApps().size() > 1 && FirebaseApp.getInstance("fallbackApp") != null)
                 ? FirebaseAuth.getInstance(FirebaseApp.getInstance("fallbackApp"))
                 : FirebaseAuth.getInstance();
     }
 
     public String verifyToken(String idToken) throws FirebaseAuthException {
-        // Get the correct FirebaseAuth instance. If the fallback was used,
-        // we need to use the fallback instance; otherwise, use the default.
         FirebaseAuth auth = (FirebaseApp.getApps().size() > 1 && FirebaseApp.getInstance("fallbackApp") != null)
                 ? FirebaseAuth.getInstance(FirebaseApp.getInstance("fallbackApp"))
                 : FirebaseAuth.getInstance();

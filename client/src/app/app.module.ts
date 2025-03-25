@@ -12,7 +12,7 @@ import { LoginComponent } from './components/user/login.component';
 import { RegisterComponent } from './components/user/register.component';
 import { TrendingComponent } from './components/navbar/trending.component';
 import { WatchlistComponent } from './components/stocks/watchlist.component';
-// import { NgbModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { StockComponent } from './components/stocks/stock.component';
 import { LocationStrategy, HashLocationStrategy } from '@angular/common'; //hash routing for railway
 import { UserStore } from './user.store';
@@ -37,7 +37,9 @@ import { environment } from '../environments/environment';
     AppRoutingModule,
     ReactiveFormsModule,
     AngularFireModule.initializeApp(environment.firebase),
-    AngularFireAuthModule
+    AngularFireAuthModule,
+    NgbModule,
+    NgbPaginationModule
     
   ],
   providers: [

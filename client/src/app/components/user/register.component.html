@@ -21,7 +21,7 @@
         <h5>Create Account</h5>
       </div>
       <div class="card-body">
-        <form [formGroup]="registerForm" (ngSubmit)="processRegistration()">
+        <form [formGroup]="registerForm" (submit)="processRegistration()">
           <div class="form-group mb-3">
             <label class="form-label">Email address</label>
             <input type="email" class="form-control" formControlName="email" placeholder="Enter email">
@@ -66,27 +66,20 @@
           </div>
           
           <div class="text-center">
-            <button type="submit" class="btn btn-primary me-2" [disabled]="registerForm.invalid || isLoading">
-              @if (isLoading) {
-                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                Processing...
-              } @else {
-                Register
-              }
-            </button>
+            <button type="submit" class="btn btn-primary me-2" [disabled]="registerForm.invalid">Register</button>
             <a routerLink="/login" class="btn btn-link">Back to Login</a>
           </div>
           
           @if (error) {
             <div class="alert alert-danger mt-3">
-              <i class="ti ti-alert-circle me-2"></i>
+              <i class="bi bi-exclamation-circle me-2"></i>
               {{ error }}
             </div>
           }
           
           @if (success) {
             <div class="alert alert-success mt-3">
-              <i class="ti ti-check me-2"></i>
+              <i class="bi bi-check-circle me-2"></i>
               {{ success }}
             </div>
           }

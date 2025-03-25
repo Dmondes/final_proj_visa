@@ -86,27 +86,4 @@ export class TrendingComponent implements OnInit {
     const endIndex = startIndex + this.itemsPerPage;
     return this.trendingStocks.slice(startIndex, endIndex);
   }
-
-  // Navigation
-  goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-    }
-  }
-
-  nextPage(): void {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
-    }
-  }
-
-  prevPage(): void {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-    }
-  }
-
-  getPageNumbers(): number[] {
-    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
-  }
 }

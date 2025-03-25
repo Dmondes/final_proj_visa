@@ -11,11 +11,11 @@ COPY client/package*.json ./
 COPY client/angular.json ./
 COPY client/tsconfig*.json ./
 
-# Install dependencies
-RUN npm ci
-
 # Copy the entire source code
 COPY client/src ./src
+
+# Install dependencies
+RUN npm ci --verbose
 
 # Make the build script executable
 RUN if [ -f src/build.sh ]; then \
@@ -27,7 +27,7 @@ RUN if [ -f src/build.sh ]; then \
 RUN if [ -f src/build.sh ]; then \
     bash ./src/build.sh; \
     else \
-    ng build --verbose; \
+    ng build; \
     fi
 
 # Stage 2: Build Spring Boot Backend
