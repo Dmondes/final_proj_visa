@@ -46,11 +46,56 @@ export class UserService {
       
       // Firebase authentication
       await this.auth.signInWithEmailAndPassword(email, password);
-    
-      const user = await this.getUserByEmail(email);
-      this.userStore.setCurrentUser(user);
-      this.userStore.setLoggedIn(true);
+      
+      // Get Firebase token
+      const currentUser = await firstValueFrom(this.auth.authState);
+      if (!currentUser) {
+        throw new Error('Login failed: Unable to get Firebase user');
+      }
+      
+      console.log("Firebase login successful for: " + email);
+      
+      try {
+        const user = await this.getUserByEmail(email);
+        this.userStore.setCurrentUser(user);
+        this.userStore.setLoggedIn(true);
+        console.log("Backend user data retrieved successfully");
+      } catch (backendError: any) {
+        console.error("Error getting user data from backend:", backendError);
+        
+        // If the user doesn't exist in the backend but does in Firebase,
+        // we should create the user in the backend
+        if (backendError.status === 404) {
+          console.log("User exists in Firebase but not in backend, attempting to register");
+          
+          try {
+            // Get Firebase token
+            const token = await currentUser.getIdToken();
+            const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+            
+            // Register the user in the backend
+            await firstValueFrom(this.http.post(`${this.userUrl}/register`, 
+              { email, password },
+              {
+                headers: headers,
+                responseType: 'text'
+              }
+            ));
+            
+            // Try to get user data again
+            const user = await this.getUserByEmail(email);
+            this.userStore.setCurrentUser(user);
+            this.userStore.setLoggedIn(true);
+          } catch (registerError) {
+            console.error("Error registering user in backend:", registerError);
+            throw new Error('Login successful in Firebase but failed to create user in backend');
+          }
+        } else {
+          throw backendError;
+        }
+      }
     } catch (error: any) {
+      console.error("Login error:", error);
       let errorMessage = 'Login failed';
       if (error.code) {
         switch (error.code) {
@@ -67,6 +112,8 @@ export class UserService {
             errorMessage = 'Incorrect password';
             break;
         }
+      } else if (error.message) {
+        errorMessage = error.message;
       }
       this.userStore.setError(errorMessage);
       this.userStore.setLoggedIn(false);
@@ -99,12 +146,19 @@ export class UserService {
       console.log("token: " + token);
       const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
       
-      await firstValueFrom(this.http.post(`${this.userUrl}/register`, null, {
-        params: { email, password },
-        headers: headers,
-        responseType: 'text'
-      }));
+      // Send email and password in request body instead of query parameters
+      await firstValueFrom(this.http.post(`${this.userUrl}/register`, 
+        { email, password }, // Email and password in request body
+        {
+          headers: headers,
+          responseType: 'text'
+        }
+      ));
+      
+      console.log("Registration successful");
+
     } catch (error: any) {
+      console.error("Registration error:", error);
       let errorMessage = 'Registration failed';
       if (error.code) {
         switch (error.code) {
@@ -153,12 +207,18 @@ export class UserService {
 
   async getUserByEmail(email: string): Promise<User> {
     try {
+      console.log(`Fetching user data for: ${email}`);
       const headers = await this.getAuthHeaders();
+      
       return await firstValueFrom(
         this.http.get<User>(`${this.userUrl}/user/${email}`, { headers })
           .pipe(
+            tap(user => {
+              console.log(`Successfully retrieved data for user: ${email}`);
+            }),
             catchError(error => {
               console.error(`Error getting user data for ${email}:`, error);
+              
               if (error.status === 500) {
                 console.error('Server error (500). This could be due to database connection issues or server configuration.');
               } else if (error.status === 401) {
@@ -166,7 +226,10 @@ export class UserService {
                 // Force logout on authentication error
                 this.userStore.setLoggedIn(false);
                 this.userStore.setCurrentUser(null);
+              } else if (error.status === 404) {
+                console.error(`User not found in backend database: ${email}`);
               }
+              
               throw error;
             })
           )

@@ -34,25 +34,51 @@ public class UserController {
     private FirebaseAuthConfig firebaseAuthConfig;
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestParam String email, @RequestParam String password, 
+    public ResponseEntity<?> register(@RequestBody(required = false) Map<String, String> requestBody,
+                                      @RequestParam(required = false) String email, 
+                                      @RequestParam(required = false) String password,
                                       @RequestHeader("Authorization") String idToken) {
         try {
+            // Try to get email and password from request body first, fall back to request params
+            String userEmail = (requestBody != null && requestBody.get("email") != null) 
+                               ? requestBody.get("email") : email;
+            String userPassword = (requestBody != null && requestBody.get("password") != null) 
+                                 ? requestBody.get("password") : password;
+            
+            if (userEmail == null || userPassword == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email and password are required");
+            }
+            
             // Verify Firebase token
             if (idToken != null && idToken.startsWith("Bearer ")) {
                 idToken = idToken.substring(7);
                 String uid = firebaseAuthConfig.verifyToken(idToken);
                 System.out.println("Token:" + uid);
+                System.out.println("Registering user: " + userEmail);
+                
                 // Token is valid, proceed with user registration
-                boolean newUser = userService.registerUser(email, password);
-                if (newUser == false) {
-                    return ResponseEntity.status(HttpStatus.CONFLICT).body("User already exists");
+                try {
+                    boolean newUser = userService.registerUser(userEmail, userPassword);
+                    if (newUser == false) {
+                        return ResponseEntity.status(HttpStatus.CONFLICT).body("User already exists");
+                    }
+                    return ResponseEntity.status(HttpStatus.CREATED).body("Registration successful");
+                } catch (Exception e) {
+                    System.err.println("Error registering user: " + e.getMessage());
+                    e.printStackTrace();
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                        .body("Registration failed: " + e.getMessage());
                 }
-                return ResponseEntity.status(HttpStatus.CREATED).body("Registration successful");
             } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid authentication token");
             }
         } catch (FirebaseAuthException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Unexpected error during registration: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                .body("Registration failed due to an unexpected error");
         }
     }
 
@@ -69,26 +95,42 @@ public class UserController {
                     System.out.println("Firebase token verified. UID: " + uid);
                     
                     // Token is valid, proceed with fetching user data
-                    User user = userService.findByEmail(email);
-                    if (user != null) {
-                        System.out.println("User found: " + user.getEmail());
-                        return ResponseEntity.ok(user);
-                    } else {
-                        System.out.println("User not found: " + email);
-                        return ResponseEntity.notFound().build();
+                    try {
+                        User user = userService.findByEmail(email);
+                        if (user != null) {
+                            System.out.println("User found: " + user.getEmail());
+                            return ResponseEntity.ok(user);
+                        } else {
+                            System.out.println("User not found: " + email);
+                            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .header("X-Error-Message", "User not found in database")
+                                .build();
+                        }
+                    } catch (Exception dbException) {
+                        System.err.println("Database error when finding user " + email + ": " + dbException.getMessage());
+                        dbException.printStackTrace();
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .header("X-Error-Message", "Database error: " + dbException.getMessage())
+                            .build();
                     }
                 } catch (FirebaseAuthException e) {
                     System.err.println("Firebase authentication error for user " + email + ": " + e.getMessage());
-                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .header("X-Error-Message", "Firebase auth error: " + e.getMessage())
+                        .build();
                 }
             } else {
                 System.err.println("Invalid Authorization header for user " + email);
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .header("X-Error-Message", "Invalid authorization header")
+                    .build();
             }
         } catch (Exception e) {
             System.err.println("Unexpected error processing request for user " + email + ": " + e.getMessage());
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .header("X-Error-Message", "Unexpected error: " + e.getMessage())
+                .build();
         }
     }
 

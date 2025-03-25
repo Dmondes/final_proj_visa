@@ -114,7 +114,15 @@ public class MysqlRepo {
     }
 
     public void createUser(String email, String password) {
-        jdbcTemplate.update(SQL_INSERT_USER, email, password, "", "", null);
+        try {
+            System.out.println("Attempting to create user: " + email);
+            int result = jdbcTemplate.update(SQL_INSERT_USER, email, password, "", "", null);
+            System.out.println("User creation result: " + result + " rows affected.");
+        } catch (Exception e) {
+            System.err.println("Database error creating user: " + e.getMessage());
+            e.printStackTrace();
+            throw e; // Re-throw to allow proper error handling in service layer
+        }
     }
 
     public Boolean emailExist(String email) {
