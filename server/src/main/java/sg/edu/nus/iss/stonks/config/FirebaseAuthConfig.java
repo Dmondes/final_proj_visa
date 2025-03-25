@@ -27,31 +27,36 @@ public class FirebaseAuthConfig {
     @Bean
     public FirebaseAuth firebaseAuth() throws IOException {
         if (FirebaseApp.getApps().isEmpty()) {
-            try  {
+            try {
                 // (InputStream serviceAccount =
                 // newClassPathResource("serviceAccountKey.json").getInputStream())
 
                 // FirebaseOptions options = FirebaseOptions.builder()
-                //         .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                //         .setProjectId("fintrenduser") 
-                //         .build();
+                // .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                // .setProjectId("fintrenduser")
+                // .build();
 
-                FirebaseOptions options = FirebaseOptions.builder()
-                .setCredentials(GoogleCredentials.fromStream(
-                new ByteArrayInputStream(createFirebaseCredentialsJson().getBytes())))
-                .setProjectId(env.getProperty("firebase.project.id"))
-                .build();
+                String firebaseCredentialsJson = env.getProperty("FIREBASE_CREDENTIALS");
+                FirebaseOptions options;
 
-                FirebaseApp.initializeApp(options);
+                if (firebaseCredentialsJson != null && !firebaseCredentialsJson.isEmpty()) {
+                    // Use the full JSON from FIREBASE_CREDENTIALS
+                    options = FirebaseOptions.builder()
+                            .setCredentials(GoogleCredentials.fromStream(
+                                    new ByteArrayInputStream(firebaseCredentialsJson.getBytes())))
+                            .build();
 
-            } catch (IOException e) { //Fallback to local run for test
+                    FirebaseApp.initializeApp(options);
+                }
+
+            } catch (IOException e) { // Fallback to local run for test
                 System.err.println("Error initializing Firebase: " + e.getMessage());
                 e.printStackTrace(); // Print the stack trace for debugging.
                 try {
                     FirebaseOptions fallbackOptions = FirebaseOptions.builder()
-                            .setProjectId("fintrenduser") 
+                            .setProjectId("fintrenduser")
                             .build();
-                    FirebaseApp.initializeApp(fallbackOptions, "fallbackApp"); 
+                    FirebaseApp.initializeApp(fallbackOptions, "fallbackApp");
                 } catch (Exception fallbackException) {
                     System.err.println("Error initializing Firebase fallback: " + fallbackException.getMessage());
                     fallbackException.printStackTrace();
