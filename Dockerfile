@@ -18,13 +18,13 @@ COPY client/src ./src
 RUN npm ci
 
 # Make the build script executable
-RUN if [ -f src/build.sh ]; then \
-    sed -i 's/\r$//' src/build.sh && \
-    chmod +x src/build.sh; \
+RUN if [ -f ./src/build.sh ]; then \
+    sed -i 's/\r$//' ./src/build.sh && \
+    chmod +x ./src/build.sh; \
     fi
 
 # Run the custom build script if it exists else ng build
-RUN if [ -f src/build.sh ]; then \
+RUN if [ -f ./src/build.sh ]; then \
     bash ./src/build.sh; \
     else \
     ng build; \
@@ -42,7 +42,6 @@ COPY server/mvnw .
 COPY server/src ./src
 
 COPY --from=ngbuild /app/client/dist/client/browser ./src/main/resources/static
-
 # Build Spring Boot application
 RUN chmod a+x mvnw
 RUN ./mvnw package -Dmaven.test.skip=true

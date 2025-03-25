@@ -78,21 +78,20 @@ public class FirebaseAuthConfig {
         return decodedToken.getUid();
     }
 
-    private String createFirebaseCredentialsJson() {
-        // Create a JSON string from the individual properties
-        return "{\n" +
-                "  \"type\": \"" + env.getProperty("firebase.credentials.type") + "\",\n" +
-                "  \"project_id\": \"" + env.getProperty("firebase.credentials.project.id") + "\",\n" +
-                "  \"private_key_id\": \"" + env.getProperty("firebase.credentials.private.key.id") + "\",\n" +
-                "  \"private_key\": \"" + env.getProperty("firebase.credentials.private.key") + "\",\n" +
-                "  \"client_email\": \"" + env.getProperty("firebase.credentials.client.email") + "\",\n" +
-                "  \"client_id\": \"" + env.getProperty("firebase.credentials.client.id") + "\",\n" +
-                "  \"auth_uri\": \"" + env.getProperty("firebase.credentials.auth.uri") + "\",\n" +
-                "  \"token_uri\": \"" + env.getProperty("firebase.credentials.token.uri") + "\",\n" +
-                "  \"auth_provider_x509_cert_url\": \""
-                + env.getProperty("firebase.credentials.auth.provider.x509.cert.url") + "\",\n" +
-                "  \"client_x509_cert_url\": \"" + env.getProperty("firebase.credentials.client.x509.cert.url") + "\"\n"
-                +
-                "}";
-    }
+    // private String createFirebaseCredentialsJson() {
+    //     return "{\n" +
+    //             "  \"type\": \"" + env.getProperty("firebase.credentials.type") + "\",\n" +
+    //             "  \"project_id\": \"" + env.getProperty("firebase.credentials.project.id") + "\",\n" +
+    //             "  \"private_key_id\": \"" + env.getProperty("firebase.credentials.private.key.id") + "\",\n" +
+    //             "  \"private_key\": \"" + env.getProperty("firebase.credentials.private.key") + "\",\n" +
+    //             "  \"client_email\": \"" + env.getProperty("firebase.credentials.client.email") + "\",\n" +
+    //             "  \"client_id\": \"" + env.getProperty("firebase.credentials.client.id") + "\",\n" +
+    //             "  \"auth_uri\": \"" + env.getProperty("firebase.credentials.auth.uri") + "\",\n" +
+    //             "  \"token_uri\": \"" + env.getProperty("firebase.credentials.token.uri") + "\",\n" +
+    //             "  \"auth_provider_x509_cert_url\": \""
+    //             + env.getProperty("firebase.credentials.auth.provider.x509.cert.url") + "\",\n" +
+    //             "  \"client_x509_cert_url\": \"" + env.getProperty("firebase.credentials.client.x509.cert.url") + "\"\n"
+    //             +
+    //             "}";
+    // }
 }
