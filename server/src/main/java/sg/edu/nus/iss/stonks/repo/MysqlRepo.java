@@ -25,7 +25,9 @@ public class MysqlRepo {
     public static final String SQL_FIND_BY_EMAIL = "SELECT * FROM users WHERE email = ?";
     public static final String SQL_EMAIL_EXISTS = "SELECT COUNT(*) FROM users WHERE email = ?";
     public static final String SQL_UPDATE_WATCH = "UPDATE users SET watchlist = ? WHERE id = ?";
-    public static final String SQL_INSERT_USER = "INSERT INTO users (email, password, watchlist, price_alerts, fcm_token) VALUES (?, ?, ?, ?, ?)";
+    // Changing SQL_INSERT_USER to handle both scenarios - with and without price_alerts/fcm_token columns
+    public static final String SQL_INSERT_USER_FULL = "INSERT INTO users (email, password, watchlist, price_alerts, fcm_token) VALUES (?, ?, ?, ?, ?)";
+    public static final String SQL_INSERT_USER_BASIC = "INSERT INTO users (email, password, watchlist) VALUES (?, ?, ?)";
     public static final String SQL_UPDATE_PRICE_ALERTS = "UPDATE users SET price_alerts = ? WHERE id = ?";
     public static final String SQL_UPDATE_FCM_TOKEN = "UPDATE users SET fcm_token = ? WHERE id = ?";
 
@@ -75,29 +77,39 @@ public class MysqlRepo {
                         user.setWatchlist(watchlist);
     
                         // Parse price alerts
-                        String priceAlertsStr = rs.getString("price_alerts");
                         Map<String, PriceAlert> priceAlerts = new HashMap<>();
-                        if (priceAlertsStr != null && !priceAlertsStr.isEmpty()) {
-                            try {
-                                String[] alertsArray = priceAlertsStr.split(";");
-                                for (String alertStr : alertsArray) {
-                                    if (alertStr != null && !alertStr.trim().isEmpty()) {
-                                        PriceAlert alert = PriceAlert.fromString(alertStr.trim());
-                                        if (alert != null) {
-                                            priceAlerts.put(alert.getTicker(), alert);
+                        try {
+                            String priceAlertsStr = rs.getString("price_alerts");
+                            if (priceAlertsStr != null && !priceAlertsStr.isEmpty()) {
+                                try {
+                                    String[] alertsArray = priceAlertsStr.split(";");
+                                    for (String alertStr : alertsArray) {
+                                        if (alertStr != null && !alertStr.trim().isEmpty()) {
+                                            PriceAlert alert = PriceAlert.fromString(alertStr.trim());
+                                            if (alert != null) {
+                                                priceAlerts.put(alert.getTicker(), alert);
+                                            }
                                         }
                                     }
+                                } catch (Exception e) {
+                                    System.err.println("Error parsing price alerts for user " + email + ": " + e.getMessage());
+                                    // Continue with empty price alerts
                                 }
-                            } catch (Exception e) {
-                                System.err.println("Error parsing price alerts for user " + email + ": " + e.getMessage());
-                                // Continue with empty price alerts
                             }
+                        } catch (Exception e) {
+                            System.out.println("price_alerts column may not exist for user " + email + ": " + e.getMessage());
+                            // Continue with empty price alerts
                         }
                         user.setPriceAlerts(priceAlerts);
     
                         // Get FCM token
-                        String fcmToken = rs.getString("fcm_token");
-                        user.setFcmToken(fcmToken);
+                        try {
+                            String fcmToken = rs.getString("fcm_token");
+                            user.setFcmToken(fcmToken);
+                        } catch (Exception e) {
+                            System.out.println("fcm_token column may not exist for user " + email + ": " + e.getMessage());
+                            user.setFcmToken(null);
+                        }
     
                         return user;
                     } catch (Exception e) {
@@ -116,8 +128,21 @@ public class MysqlRepo {
     public void createUser(String email, String password) {
         try {
             System.out.println("Attempting to create user: " + email);
-            int result = jdbcTemplate.update(SQL_INSERT_USER, email, password, "", "", null);
-            System.out.println("User creation result: " + result + " rows affected.");
+            int result;
+            
+            try {
+                // First try with all columns including price_alerts and fcm_token
+                result = jdbcTemplate.update(SQL_INSERT_USER_FULL, email, password, "", "", null);
+                System.out.println("User creation with full schema successful: " + result + " rows affected.");
+            } catch (Exception e) {
+                System.out.println("Full schema insertion failed, trying basic schema: " + e.getMessage());
+                // If that fails, try with just the basic columns
+                result = jdbcTemplate.update(SQL_INSERT_USER_BASIC, email, password, "");
+                System.out.println("User creation with basic schema successful: " + result + " rows affected.");
+                
+                // Log a warning that database schema may need updating
+                System.out.println("WARNING: Database schema may need to be updated. Run the db_update.sql script.");
+            }
         } catch (Exception e) {
             System.err.println("Database error creating user: " + e.getMessage());
             e.printStackTrace();
