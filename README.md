@@ -73,3 +73,7 @@ The project is divided into two main parts:
      * `/api/register`: create new user.
      *  `/api/user/watchlist/add` and `/api/user/watchlist/remove`: Add/remove tickers from the user's watchlist.
      * `/api/user/{email}`: get user by email, together with user's details.
+
+Optional requirements
+domain name
+service worker

@@ -11,14 +11,24 @@ COPY client/package*.json ./
 COPY client/angular.json ./
 COPY client/tsconfig*.json ./
 
-# Install dependencies (using npm ci for consistency)
+# Install dependencies
 RUN npm ci
 
-# Copy the entire source code (after dependency installation)
+# Copy the entire source code
 COPY client/src ./src
 
-# Build the Angular app with verbose output
-RUN ng build --verbose
+# Make the build script executable
+RUN if [ -f src/build.sh ]; then \
+    sed -i 's/\r$//' src/build.sh && \
+    chmod +x src/build.sh; \
+    fi
+
+# Run the custom build script if it exists else ng build
+RUN if [ -f src/build.sh ]; then \
+    bash ./src/build.sh; \
+    else \
+    ng build --verbose; \
+    fi
 
 # Stage 2: Build Spring Boot Backend
 FROM openjdk:23 AS javabuild

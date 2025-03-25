@@ -6,7 +6,7 @@
           <h5 class="m-b-10">Register</h5>
         </div>
         <ul class="breadcrumb">
-          <li class="breadcrumb-item"><a routerLink="/home">Home</a></li>
+          <li class="breadcrumb-item"><a routerLink="/home">Dashboard</a></li>
           <li class="breadcrumb-item" aria-current="page">Register</li>
         </ul>
       </div>
@@ -66,7 +66,14 @@
           </div>
           
           <div class="text-center">
-            <button type="submit" class="btn btn-primary me-2" [disabled]="registerForm.invalid">Register</button>
+            <button type="submit" class="btn btn-primary me-2" [disabled]="registerForm.invalid || isLoading">
+              @if (isLoading) {
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                Processing...
+              } @else {
+                Register
+              }
+            </button>
             <a routerLink="/login" class="btn btn-link">Back to Login</a>
           </div>
           

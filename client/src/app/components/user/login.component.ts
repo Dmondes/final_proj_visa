@@ -2,6 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { UserService } from '../../services/user.service';
+import { UserStore } from '../../user.store';
 
 @Component({
   selector: 'app-login',
@@ -12,15 +13,34 @@ import { UserService } from '../../services/user.service';
 export class LoginComponent implements OnInit {
 
   userForm!: FormGroup;
-  error !: string;
+  error!: string;
+  isLoading = false;
 
   private userService = inject(UserService);
+  private userStore = inject(UserStore);
   private router = inject(Router);
 
   ngOnInit(): void {
     this.userForm = new FormGroup({
       email: new FormControl('', [Validators.required, Validators.email]),
       password: new FormControl('', [Validators.required, Validators.minLength(6)])
+    });
+
+    // Subscribe to error updates from the store
+    this.userStore.error$.subscribe(error => {
+      this.error = error || '';
+    });
+
+    // Subscribe to loading state
+    this.userStore.isLoading$.subscribe(isLoading => {
+      this.isLoading = isLoading;
+    });
+
+    // Check if user is already logged in
+    this.userStore.isLoggedIn$.subscribe(isLoggedIn => {
+      if (isLoggedIn) {
+        this.router.navigate(['/watchlist']);
+      }
     });
   }
 
@@ -31,8 +51,7 @@ export class LoginComponent implements OnInit {
       await this.userService.login(email, password);
       this.router.navigate(['/watchlist']);
     } catch (err: any) {
-      this.error = err.message || err.error || err.statusText || 'Login failed';
+      // Error is handled by the store subscription
     }
   }
 }
-

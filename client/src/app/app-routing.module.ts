@@ -7,6 +7,7 @@ import { LoginComponent } from './components/user/login.component';
 import { TrendingComponent } from './components/navbar/trending.component';
 import { WatchlistComponent } from './components/stocks/watchlist.component';
 import { StockComponent } from './components/stocks/stock.component';
+import { AuthGuard } from './services/auth.guard';
 
 const routes: Routes = [
   { path: 'home', component: HomeComponent },
@@ -15,7 +16,7 @@ const routes: Routes = [
   { path: 'signup', component: RegisterComponent },
   { path: 'trending', component: TrendingComponent },
   { path: 'stock/:ticker', component: StockComponent },
-  { path: 'watchlist', component: WatchlistComponent },
+  { path: 'watchlist', component: WatchlistComponent, canActivate: [AuthGuard] },
   { path: '', redirectTo: '/home', pathMatch: 'full' }
 ];
 

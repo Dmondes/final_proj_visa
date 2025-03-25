@@ -26,7 +26,11 @@
   <div class="navbar-nav">
     <div class="nav-item dropdown">
       <a class="nav-link px-3 dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-        <i class="ti ti-user-circle"></i> Account
+        @if (loginStatus | async) {
+          <i class="ti ti-user-circle"></i> {{ userEmail }}
+        } @else {
+          <i class="ti ti-user-circle"></i> Account
+        }
       </a>
       <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
         @if (!(loginStatus | async)) {
@@ -36,7 +40,7 @@
         @if (loginStatus | async) {
           <li><a class="dropdown-item" href="#"><i class="ti ti-settings"></i> Account Settings</a></li>
           <li><hr class="dropdown-divider"></li>
-          <li><a class="dropdown-item" (click)="logout()"><i class="ti ti-logout"></i> Sign Out</a></li>
+          <li><a class="dropdown-item" (click)="logout()" style="cursor: pointer;"><i class="ti ti-logout"></i> Sign Out</a></li>
         }
       </ul>
     </div>

@@ -37,5 +37,6 @@ public class ScrapService {
 
   public void updateDailyTickerCounts() {
     scrapRepo.updateDailyTickerCounts();
+    scrapRepo.updateWeeklyTickerCounts();
   }
 }

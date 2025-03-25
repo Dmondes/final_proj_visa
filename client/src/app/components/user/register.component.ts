@@ -13,8 +13,9 @@ import { UserStore } from '../../user.store';
 export class RegisterComponent implements OnInit {
  
   registerForm!: FormGroup;
-  error !: string;
-  success !: string;
+  error!: string;
+  success!: string;
+  isLoading = false;
 
   private fb = inject(FormBuilder);
   private userService = inject(UserService);
@@ -27,8 +28,22 @@ export class RegisterComponent implements OnInit {
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', Validators.required]
     }, { validator: this.passwordMatchValidator });
+    
+    // Subscribe to error updates from the store
     this.userStore.error$.subscribe(error => {
       this.error = error || '';
+    });
+
+    // Subscribe to loading state
+    this.userStore.isLoading$.subscribe(isLoading => {
+      this.isLoading = isLoading;
+    });
+
+    // Check if user is already logged in
+    this.userStore.isLoggedIn$.subscribe(isLoggedIn => {
+      if (isLoggedIn) {
+        this.router.navigate(['/watchlist']);
+      }
     });
   }
 
@@ -41,12 +56,12 @@ export class RegisterComponent implements OnInit {
     if (this.registerForm.invalid) return;
 
     const { email, password } = this.registerForm.value;
-    try{
-        await this.userService.register(email, password);
-        this.success = 'Registration successful!';
-        this.router.navigate(['/login']);
-    }catch(err: any){
-        this.error = err.error || 'Registration failed';
+    try {
+      await this.userService.register(email, password);
+      this.success = 'Registration successful!';
+      this.router.navigate(['/login']);
+    } catch (err: any) {
+      // Error is handled by the store subscription
     }
   }
 }

@@ -29,13 +29,14 @@ public class StonksApplication {
 	public void updateDailyTickerCountsSchedule() {
 		scrapRepo.scrapeRisingPosts();
 		scrapRepo.updateDailyTickerCounts();
+		scrapRepo.updateWeeklyTickerCounts();
 		System.out.println("Hourly scrape");
 	}
 
-	@Scheduled(cron = "${scheduler.ticker_counts_weekly.cron}") // Run daily at midnight
-	public void updateWeeklyTickerCountsSchedule() {
-		scrapRepo.updateWeeklyTickerCounts();
-		System.out.println("Weekly update");
-	}
+	// @Scheduled(cron = "${scheduler.ticker_counts_weekly.cron}") // Run daily at midnight
+	// public void updateWeeklyTickerCountsSchedule() {
+	// 	scrapRepo.updateWeeklyTickerCounts();
+	// 	System.out.println("Weekly update");
+	// }
 
 }

@@ -60,17 +60,17 @@ public class ScrapRepo {
     private static List<Stocklist> stockList = new ArrayList<>();
     private static Set<String> validTickersSet = new HashSet<>();
     private static final Set<String> commonWordTickersSet = new HashSet<>(Arrays.asList(
-            "A", "ACT", "ADD", "AKA", "ALL", "AM", "AMC", "AN", "AND", "ANY", "ARE", "AS", "AT",
-            "BACK", "BE", "BC", "BETA", "BIO", "BOOK", "BROS", "BY",
-            "CALM", "CAN", "CAP", "CAR", "CARS", "CCL", "CHART", "CLOSE", "COST",
-            "DAY", "DOW", "DTE","EDIT", "EVER","F", "FIVE", "FOR", "FUND",
-            "GOLD", "GO", "GOOD", "GT", "HAS", "HE", "HIGH", "HI", "HOLD", "ICU", "IRS", "IT",
-            "JOB", "K", "LMT", "LOW", "LUCK","M", "MAIN", "MAR", "ME", "MSN",
-            "NAT", "NET", "NEW", "NOW","OLD", "ON", "ONE", "OPEN", "OR", "OUT",
-            "P/E", "PER", "PLAY", "POST", "PRICE", "QUOTE",  "RAY", "REAL", "CASH",
-            "S", "SAFE", "SAT", "SAY", "SEE", "SELF", "SELL", "SHARE", "SO", "SOLD", "STOCK", 
-            "T", "THE", "TICKER", "TRADE", "TSLA", "TWO","UP", "USE", "EU", "NEXT", "HIT", "FAST",
-            "VALUE", "VS","WAY", "WELL", "WHO","XP","YIELD", "YOU"));
+        "A", "ACT", "ADD", "AKA", "ALL", "AM", "AMC", "AN", "AND", "ANY", "ARE", "AS", "AT",
+        "BACK", "BE", "BC", "BETA", "BIO", "BOOK", "BROS", "BY", "TECH", "UK", "LAW", "TALK",
+        "CALM", "CAN", "CAP", "CAR", "CARS", "CCL", "CHART", "CLOSE", "COST", "LOAN", "MASS",
+        "DAY", "DOW", "DTE","EDIT", "EVER","F", "FIVE", "FOR", "FUND", "PAY", "SITE", "HOPE",
+        "GOLD", "GO", "GOOD", "GT", "HAS", "HE", "HIGH", "HI", "HOLD", "ICU", "IRS", "IT", "BIRD",
+        "JOB", "K", "LMT", "LOW", "LUCK","M", "MAIN", "MAR", "ME", "MSN", "SHIP", "GAIN",
+        "NAT", "NET", "NEW", "NOW","OLD", "ON", "ONE", "OPEN", "OR", "OUT", "FORM", "MIND",
+        "P/E", "PER", "PLAY", "POST", "PRICE", "QUOTE",  "RAY", "REAL", "CASH", "API", "TOP",
+        "S", "SAFE", "SAT", "SAY", "SEE", "SELF", "SELL", "SHARE", "SO", "SOLD", "STOCK", 
+        "T", "THE", "TICKER", "TRADE", "TSLA", "TWO","UP", "USE", "EU", "NEXT", "HIT", "FAST",
+        "VALUE", "VS","WAY", "WELL", "WHO","XP","YIELD", "YOU"));
 
     @PostConstruct
     public void init() {
@@ -255,7 +255,7 @@ public class ScrapRepo {
         }
         // Only return if the score> 3
         if (highestScore >= 3) {
-            System.out.println(" Found ticker: " + bestTicker + " in text: " + text
+            System.out.println(" Found ticker: " + bestTicker + " in text: "
                     + " with score: " + highestScore);
             return bestTicker;
         } else {

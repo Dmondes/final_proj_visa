@@ -1,31 +1,74 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { BehaviorSubject, firstValueFrom } from 'rxjs';
+import { BehaviorSubject, firstValueFrom, from, Observable } from 'rxjs';
 import { User, UserState } from '../model/user';
 import { UserStore } from '../user.store';
-
+import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { tap, switchMap, catchError } from 'rxjs/operators';
 
 @Injectable({providedIn: 'root'})
 export class UserService {
   private userUrl = '/api';
   private http = inject(HttpClient);
   private userStore = inject(UserStore);
+  private auth = inject(AngularFireAuth);
   
   readonly currentUser = this.userStore.currentUser$;
   readonly loginStatus = this.userStore.isLoggedIn$;
+
+  constructor() {
+    // Listen to Firebase auth state changes
+    this.auth.authState.subscribe(async (firebaseUser) => {
+      if (firebaseUser) {
+        try {
+          // Get Firebase token
+          const token = await firebaseUser.getIdToken();
+          
+          // Get user data from backend
+          const user = await this.getUserByEmail(firebaseUser.email || '');
+          this.userStore.setCurrentUser(user);
+          this.userStore.setLoggedIn(true);
+        } catch (error) {
+          console.error('Error getting user data:', error);
+          this.userStore.setLoggedIn(false);
+        }
+      } else {
+        this.userStore.setCurrentUser(null);
+        this.userStore.setLoggedIn(false);
+      }
+    });
+  }
 
   async login(email: string, password: string): Promise<void> {
     try {
       this.userStore.setLoading(true);
       this.userStore.setError(null);
-      await firstValueFrom(this.http.post(`${this.userUrl}/login`, { email, password }, { responseType: 'text' }));
-
-      // If login is successful, fetch user details
+      
+      // Firebase authentication
+      await this.auth.signInWithEmailAndPassword(email, password);
+    
       const user = await this.getUserByEmail(email);
       this.userStore.setCurrentUser(user);
       this.userStore.setLoggedIn(true);
     } catch (error: any) {
-      this.userStore.setError(error.message || 'Login failed');
+      let errorMessage = 'Login failed';
+      if (error.code) {
+        switch (error.code) {
+          case 'auth/invalid-email':
+            errorMessage = 'Invalid email format';
+            break;
+          case 'auth/user-disabled':
+            errorMessage = 'This account has been disabled';
+            break;
+          case 'auth/user-not-found':
+            errorMessage = 'User not found';
+            break;
+          case 'auth/wrong-password':
+            errorMessage = 'Incorrect password';
+            break;
+        }
+      }
+      this.userStore.setError(errorMessage);
       this.userStore.setLoggedIn(false);
       throw error;
     } finally {
@@ -33,9 +76,14 @@ export class UserService {
     }
   }
 
-  logout() {
-    this.userStore.setCurrentUser(null);
-    this.userStore.setLoggedIn(false);
+  async logout(): Promise<void> {
+    try {
+      await this.auth.signOut();
+      this.userStore.setCurrentUser(null);
+      this.userStore.setLoggedIn(false);
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   }
 
   async register(email: string, password: string): Promise<void> {
@@ -43,21 +91,60 @@ export class UserService {
       this.userStore.setLoading(true);
       this.userStore.setError(null);
       
+      // Firebase authentication
+      const userCredential = await this.auth.createUserWithEmailAndPassword(email, password);
+      
+      // Get Firebase token
+      const token = await userCredential.user?.getIdToken();
+      console.log("token: " + token);
+      const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+      
       await firstValueFrom(this.http.post(`${this.userUrl}/register`, null, {
         params: { email, password },
+        headers: headers,
         responseType: 'text'
       }));
     } catch (error: any) {
-      this.userStore.setError(error.message || 'Registration failed');
+      let errorMessage = 'Registration failed';
+      if (error.code) {
+        switch (error.code) {
+          case 'auth/email-already-in-use':
+            errorMessage = 'Email already in use';
+            break;
+          case 'auth/invalid-email':
+            errorMessage = 'Invalid email format';
+            break;
+          case 'auth/weak-password':
+            errorMessage = 'Password is too weak';
+            break;
+        }
+      }
+      this.userStore.setError(errorMessage);
       throw error;
     } finally {
       this.userStore.setLoading(false);
     }
   }
 
+  getCurrentFirebaseUser(): Observable<firebase.default.User | null> {
+    return this.auth.authState;
+  }
+
+  private async getAuthHeaders(): Promise<HttpHeaders> {
+    const user = await firstValueFrom(this.auth.authState);
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+    
+    const token = await user.getIdToken();
+    return new HttpHeaders().set('Authorization', `Bearer ${token}`);
+  }
 
   async getUserByEmail(email: string): Promise<User> {
-    return await firstValueFrom(this.http.get<User>(`${this.userUrl}/user/${email}`)) as User;
+    const headers = await this.getAuthHeaders();
+    return await firstValueFrom(
+      this.http.get<User>(`${this.userUrl}/user/${email}`, { headers })
+    ) as User;
   }
 
   async addToWatchlist(email: string, ticker: string): Promise<void> {
@@ -73,8 +160,10 @@ export class UserService {
     this.userStore.setCurrentUser({ ...currentUser, watchlist: updatedWatchlist });
 
     try {
+      const headers = await this.getAuthHeaders();
       await firstValueFrom(this.http.post(`${this.userUrl}/user/watchlist/add`, null, {
         params: { email, ticker },
+        headers,
         responseType: 'text'
       }));
     } catch (error) {
@@ -97,8 +186,10 @@ export class UserService {
     this.userStore.setCurrentUser({ ...currentUser, watchlist: updatedWatchlist });
 
     try {
+      const headers = await this.getAuthHeaders();
       await firstValueFrom(this.http.post(`${this.userUrl}/user/watchlist/remove`, null, {
         params: { email, ticker },
+        headers,
         responseType: 'text'
       }));
     } catch (error) {

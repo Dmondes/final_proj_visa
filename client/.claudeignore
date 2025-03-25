@@ -1,0 +1,12 @@
+.angular
+.vercel
+.vscode
+node_modules
+public
+.editorconfig
+.gitignore
+
+src/environments
+src/assets
+tsconfig.*
+*.spec.ts
