@@ -12,26 +12,14 @@ COPY client/angular.json ./
 COPY client/tsconfig*.json ./
 
 # Install dependencies first (for better caching)
-RUN npm ci --verbose
+RUN npm ci 
 
 # Copy the entire source code
 COPY client/src ./src
 COPY client/public ./public
 
-# Make the build script executable
-RUN if [ -f src/build.sh ]; then \
-    sed -i 's/\r$//' src/build.sh && \
-    chmod +x src/build.sh; \
-    fi
-
-# Run the custom build script if it exists else ng build
-RUN if [ -f src/build.sh ]; then \
-    echo "Using custom build script..." && \
-    bash ./src/build.sh || { echo "Build script failed"; exit 1; }; \
-    else \
-    echo "Using default ng build..." && \
-    ng build; \
-    fi
+# Simply run ng build for the frontend
+RUN echo "Building Angular application..." && ng build
 
 # Verify build output exists
 RUN ls -la dist/ && \
@@ -39,7 +27,6 @@ RUN ls -la dist/ && \
       ls -la dist/client/; \
       if [ -d "dist/client/browser" ]; then \
         echo "Build succeeded with expected output"; \
-        ls -la dist/client/browser/; \
       else \
         echo "ERROR: Expected dist/client/browser directory not found"; \
         exit 1; \
