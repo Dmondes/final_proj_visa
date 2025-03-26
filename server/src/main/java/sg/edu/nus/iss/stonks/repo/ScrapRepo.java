@@ -28,7 +28,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-import org.slf4j.Logger; 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import jakarta.annotation.PostConstruct;
@@ -42,7 +42,6 @@ import sg.edu.nus.iss.stonks.model.ScrapedPost;
 import sg.edu.nus.iss.stonks.model.Stock;
 import sg.edu.nus.iss.stonks.model.StockPrice;
 import sg.edu.nus.iss.stonks.model.Stocklist;
-
 
 @Repository
 public class ScrapRepo {
@@ -65,14 +64,13 @@ public class ScrapRepo {
     private static List<Stocklist> stockList = new ArrayList<>();
     private static Map<String, String> tickerToCompanyNameMap = new HashMap<>();
     private static Set<String> validTickersSet = new HashSet<>();
-   
+
     private static final Set<String> TICKER_CONTEXT_KEYWORDS = Set.of(
             "stock", "stocks", "shares", "share", "ticker", "buy", "sell", "buying",
             "selling", "hold", "holding", "short", "shorting", "long", "calls", "puts",
             "options", "equity", "dividend", "earnings", "market", "cap", "trading",
             "invest", "investment", "portfolio", "bullish", "bearish", "moon", "diamond",
-            "hands", "tendies", "yolo", "dd", "due diligence"
-    );
+            "hands", "tendies", "yolo", "dd", "due diligence");
 
     private static final int SCORE_DOLLAR_PREFIX = 100; // Very strong signal
     private static final int SCORE_ALL_CAPS = 25; // Strong signal
@@ -89,7 +87,8 @@ public class ScrapRepo {
         validTickersSet = sqlRepo.getAllSymbols(); // Load from DB
         List<Stocklist> stocks = sqlRepo.getAllStocklist();
         tickerToCompanyNameMap = stocks.stream()
-                .collect(Collectors.toMap(Stocklist::getSymbol, Stocklist::getCompanyName, (existing, replacement) -> existing));
+                .collect(Collectors.toMap(Stocklist::getSymbol, Stocklist::getCompanyName,
+                        (existing, replacement) -> existing));
     }
 
     private String getRedditAccessToken() {
@@ -193,10 +192,9 @@ public class ScrapRepo {
         }
 
         Map<String, Integer> tickerScores = new HashMap<>();
-        String textLower = text.toLowerCase(); // For context and company name checks
-        // Split considering various separators but keep $ attached if present
-        String[] words = text.split("[\\s\\p{Punct}&&[^$]]+"); // Split on whitespace or punctuation (except $)
-        List<String> wordList = Arrays.asList(words); // For easier context checking
+        String textLower = text.toLowerCase();
+        String[] words = text.split("[\\s\\p{Punct}&&[^$]]+");
+        List<String> wordList = Arrays.asList(words);
 
         String potentialDollarTicker = null;
         int dollarTickerScore = 0;
@@ -212,7 +210,7 @@ public class ScrapRepo {
             boolean isDollarPrefixed = false;
 
             // 1. Check for $ Prefix (Highest Priority)
-            if (originalWord != null && originalWord.startsWith("$") && originalWord.length() > 1) {
+            if (originalWord.startsWith("$") && originalWord.length() > 1) {
                 potentialTicker = originalWord.substring(1).replaceAll("[^A-Za-z]", ""); // Clean after $
                 potentialTicker = potentialTicker.toUpperCase();
                 isDollarPrefixed = true;
@@ -221,10 +219,10 @@ public class ScrapRepo {
                 if (isValidTicker(potentialTicker)) {
                     currentScore = SCORE_DOLLAR_PREFIX;
                     // Store this separately as it's a very strong candidate
-                     if (currentScore > dollarTickerScore) {
-                         dollarTickerScore = currentScore;
-                         potentialDollarTicker = potentialTicker;
-                     }
+                    if (currentScore > dollarTickerScore) {
+                        dollarTickerScore = currentScore;
+                        potentialDollarTicker = potentialTicker;
+                    }
                     // Add score to main map as well, in case context reinforces it
                     tickerScores.put(potentialTicker, tickerScores.getOrDefault(potentialTicker, 0) + currentScore);
                 } else {
@@ -240,18 +238,25 @@ public class ScrapRepo {
                 }
 
                 // 3. Score based on Case (All Caps?)
-                // Check if the original word (before upper-casing) was all caps and matches the cleaned ticker
-                if (isAllUpperCase(originalWord.replaceAll("[^A-Za-z]", "")) && originalWord.replaceAll("[^A-Za-z]", "").equals(potentialTicker)) {
+                // Check if the original word (before upper-casing) was all caps and matches the
+                // cleaned ticker
+                if (isAllUpperCase(originalWord.replaceAll("[^A-Za-z]", ""))
+                        && originalWord.replaceAll("[^A-Za-z]", "").equals(potentialTicker)) {
                     currentScore += SCORE_ALL_CAPS;
                 }
 
                 // 4. Score based on Context Keywords
                 int contextScore = 0;
                 int start = Math.max(0, i - 5); // Check 5 words before
-                int end = Math.min(wordList.size(), i + 6); // Check 5 words after (inclusive of current word's potential context)
+                int end = Math.min(wordList.size(), i + 6); // Check 5 words after (inclusive of current word's
+                                                            // potential context)
                 for (int j = start; j < end; j++) {
-                    if (i == j) continue; // Don't check the word against itself
-                    String contextWord = wordList.get(j).toLowerCase();
+                    if (i == j)
+                        continue;
+                    String word = wordList.get(j);
+                    if (word == null || word.isEmpty())
+                        continue;
+                    String contextWord = word.toLowerCase();
                     if (TICKER_CONTEXT_KEYWORDS.contains(contextWord)) {
                         contextScore += SCORE_CONTEXT_KEYWORD;
                         if (contextScore >= MAX_CONTEXT_SCORE) {
@@ -284,11 +289,10 @@ public class ScrapRepo {
 
         // If a $ticker was found and scored highly, it's a strong contender
         if (potentialDollarTicker != null) {
-             bestTicker = potentialDollarTicker;
-             highestScore = tickerScores.getOrDefault(bestTicker, 0); // Get its total score including context etc.
-             logger.trace("Dollar-prefixed ticker {} found with initial score {}", bestTicker, dollarTickerScore);
+            bestTicker = potentialDollarTicker;
+            highestScore = tickerScores.getOrDefault(bestTicker, 0); // Get its total score including context etc.
+            logger.trace("Dollar-prefixed ticker {} found with initial score {}", bestTicker, dollarTickerScore);
         }
-
 
         // Compare with other potential tickers
         for (Map.Entry<String, Integer> entry : tickerScores.entrySet()) {
@@ -298,23 +302,26 @@ public class ScrapRepo {
                 bestTicker = entry.getKey();
             }
             // Tie-breaking: If scores are equal, prefer the $ticker if it exists
-            else if (entry.getValue() == highestScore && potentialDollarTicker != null && !entry.getKey().equals(potentialDollarTicker)) {
-                 // Keep the potentialDollarTicker as bestTicker if scores are equal
-                 logger.trace("Ticker {} tied with dollar-ticker {} score {}, preferring dollar-ticker.", entry.getKey(), potentialDollarTicker, highestScore);
+            else if (entry.getValue() == highestScore && potentialDollarTicker != null
+                    && !entry.getKey().equals(potentialDollarTicker)) {
+                // Keep the potentialDollarTicker as bestTicker if scores are equal
+                logger.trace("Ticker {} tied with dollar-ticker {} score {}, preferring dollar-ticker.", entry.getKey(),
+                        potentialDollarTicker, highestScore);
             }
         }
-
 
         // Final Decision based on Threshold
         if (bestTicker != null && highestScore >= MIN_CONFIDENCE_THRESHOLD) {
             logger.debug("Determined best ticker: {} with score: {} from text snippet: \"{}\"",
-                         bestTicker, highestScore, text.length() > 100 ? text.substring(0, 100) + "..." : text);
+                    bestTicker, highestScore, text.length() > 100 ? text.substring(0, 100) + "..." : text);
             return bestTicker;
         } else {
             if (bestTicker != null) {
-                 logger.trace("Ticker {} found, but score {} is below threshold {}. Discarding.", bestTicker, highestScore, MIN_CONFIDENCE_THRESHOLD);
+                logger.trace("Ticker {} found, but score {} is below threshold {}. Discarding.", bestTicker,
+                        highestScore, MIN_CONFIDENCE_THRESHOLD);
             } else {
-                logger.trace("No confident ticker found in text snippet: \"{}\"", text.length() > 100 ? text.substring(0, 100) + "..." : text);
+                logger.trace("No confident ticker found in text snippet: \"{}\"",
+                        text.length() > 100 ? text.substring(0, 100) + "..." : text);
             }
             return null; // Return null if no ticker meets the confidence threshold
         }
@@ -336,7 +343,6 @@ public class ScrapRepo {
     private boolean isValidTicker(String ticker) {
         return ticker != null && !ticker.isEmpty() && ticker.length() <= 5 && validTickersSet.contains(ticker);
     }
-
 
     public void csvFile() {
         InputStream is = getClass().getResourceAsStream("/nasdaq_tickers.csv");
