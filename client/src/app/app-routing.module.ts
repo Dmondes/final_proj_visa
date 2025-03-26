@@ -4,11 +4,11 @@ import { HomeComponent } from './components/navbar/home.component';
 import { AboutComponent } from './components/navbar/about.component';
 import { RegisterComponent } from './components/user/register.component';
 import { LoginComponent } from './components/user/login.component';
-import { NotificationSettingsComponent } from './components/user/notification-settings.component';
 import { TrendingComponent } from './components/navbar/trending.component';
 import { WatchlistComponent } from './components/stocks/watchlist.component';
 import { StockComponent } from './components/stocks/stock.component';
 import { AuthGuard } from './services/auth.guard';
+import { NotificationSettingsComponent } from './components/user/notification-settings.component';
 
 const routes: Routes = [
   { path: 'home', component: HomeComponent },
@@ -18,7 +18,7 @@ const routes: Routes = [
   { path: 'trending', component: TrendingComponent },
   { path: 'stock/:ticker', component: StockComponent },
   { path: 'watchlist', component: WatchlistComponent, canActivate: [AuthGuard] },
-  { path: 'notifications', component: StockComponent },
+  { path: 'notifications', component: NotificationSettingsComponent},
   { path: '', redirectTo: '/home', pathMatch: 'full' }
 ];
 
