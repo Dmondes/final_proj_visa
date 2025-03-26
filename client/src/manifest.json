@@ -1,9 +1,9 @@
 {
-    "name": "Finntrend",
+    "name": "Fintrend",
     "short_name": "Fintrend",
     "description": "Find the hottest stocks being discussed right now on Reddit's most popular investing communities.",
     "theme_color": "#007bff", 
-    "background_color": "#ffffff",
+    "background_color": "#000000",
     "display": "standalone",
     "scope": "/",
     "start_url": "/",
