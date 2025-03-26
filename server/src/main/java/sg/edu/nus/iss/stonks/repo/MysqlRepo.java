@@ -17,6 +17,7 @@ import org.springframework.stereotype.Repository;
 
 import sg.edu.nus.iss.stonks.model.PriceAlert;
 import sg.edu.nus.iss.stonks.model.Stock;
+import sg.edu.nus.iss.stonks.model.Stocklist;
 import sg.edu.nus.iss.stonks.model.User;
 
 @Repository
@@ -25,6 +26,7 @@ public class MysqlRepo {
     private static final Logger logger = LoggerFactory.getLogger(MysqlRepo.class); 
     public static final String SQL_INSERT_STOCK = "INSERT INTO listing (symbol, company_name, market_cap, ipo_year, volume, sector, industry) VALUES (?, ?, ?, ?, ?, ?, ?)";
     public static final String SQL_COUNT_STOCKS = "select count(*) as count from listing";
+    public static final String SQL_GET_ALL_STOCKLIST = "SELECT symbol, company_name FROM listing";
     public static final String SQ_GET_SYMBOLS = "SELECT symbol FROM listing";
     public static final String SQL_FIND_BY_EMAIL = "SELECT * FROM users WHERE email = ?";
     public static final String SQL_EMAIL_EXISTS = "SELECT COUNT(*) FROM users WHERE email = ?";
@@ -48,6 +50,15 @@ public class MysqlRepo {
             return count;
         return 0;
 
+    }
+
+     public List<Stocklist> getAllStocklist() {
+        List<Stocklist> stockList = new ArrayList<>();
+        SqlRowSet rs = jdbcTemplate.queryForRowSet(SQL_GET_ALL_STOCKLIST);
+        while (rs.next()) {
+            stockList.add(new Stocklist(rs.getString("symbol"), rs.getString("company_name")));
+        }
+        return stockList;
     }
 
     public Set<String> getAllSymbols() {
