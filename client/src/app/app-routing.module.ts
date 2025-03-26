@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { HomeComponent } from './components/navbar/home.component';
-import { AboutComponent } from './components/navbar/about.component';
 import { RegisterComponent } from './components/user/register.component';
 import { LoginComponent } from './components/user/login.component';
 import { TrendingComponent } from './components/navbar/trending.component';
@@ -12,7 +11,6 @@ import { NotificationSettingsComponent } from './components/user/notification-se
 
 const routes: Routes = [
   { path: 'home', component: HomeComponent },
-  { path: 'about', component: AboutComponent },
   { path: 'login', component: LoginComponent },
   { path: 'signup', component: RegisterComponent },
   { path: 'trending', component: TrendingComponent },

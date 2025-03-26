@@ -36,9 +36,36 @@
   </div>
 </div>
 
-<div class="row">
+<div class="row my-4">
+  <div class="col-md-8">
+    <p class="lead">Fintrend is a web application that scrapes Reddit for trending stock tickers and provides information about them.</p>
+    <p>The application monitors popular investing subreddits such as:</p>
+    <ul class="list-group mb-3">
+      <li class="list-group-item"><i class="bi bi-reddit me-2"></i>r/wallstreetbets</li>
+      <li class="list-group-item"><i class="bi bi-reddit me-2"></i>r/stocks</li>
+      <li class="list-group-item"><i class="bi bi-reddit me-2"></i>r/investing</li>
+      <li class="list-group-item"><i class="bi bi-reddit me-2"></i>r/StockMarket</li>
+    </ul>
+    <p>It then counts the mentions of each ticker and displays the trending ones, allowing you to stay informed about which stocks are generating buzz in the community.</p>
+  </div>
   <div class="col-md-4">
-    <div class="card">
+    <div class="card h-100">
+      <div class="card-header py-3">
+        <h5 class="card-title m-0"><i class="bi bi-info-circle me-2"></i>Disclaimer</h5>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-warning h-100">
+          <p>Fintrend is built for a personal project and does not provide actual financial advice.</p>
+          <p class="mb-0">The mentions of stocks on Reddit may not reflect their actual value or potential for growth.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mb-4">
+  <div class="col-md-4">
+    <div class="card h-100">
       <div class="card-body">
         <h5 class="card-title"><i class="bi bi-rocket-takeoff me-2"></i>Discover</h5>
         <p class="card-text">Find the hottest stocks being discussed right now on Reddit's most popular investing communities.</p>
@@ -46,7 +73,7 @@
     </div>
   </div>
   <div class="col-md-4">
-    <div class="card">
+    <div class="card h-100">
       <div class="card-body">
         <h5 class="card-title"><i class="bi bi-list-ul me-2"></i>Track</h5>
         <p class="card-text">Add stocks to your watchlist to keep track of your favorite tickers and potential investments.</p>
@@ -54,10 +81,37 @@
     </div>
   </div>
   <div class="col-md-4">
-    <div class="card">
+    <div class="card h-100">
       <div class="card-body">
-        <h5 class="card-title"><i class="bi bi-chat-dots me-2"></i>Analyze</h5>
-        <p class="card-text">Read recent posts and understand why certain stocks are trending in the investing community.</p>
+        <h5 class="card-title"><i class="bi bi-bar-chart-fill me-2"></i>Analyze</h5>
+        <p class="card-text">Get insights into trending patterns and understand which stocks are gaining community attention.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="card shadow-sm">
+      <div class="card-header py-3">
+        <h5 class="card-title m-0"><i class="bi bi-code-slash me-2"></i>Technology Stack</h5>
+      </div>
+      <div class="card-body">
+        <p>Fintrend is built using modern web technologies:</p>
+        <div class="row">
+          <div class="col-md-3">
+            <span class="badge bg-primary me-2">Frontend</span> Angular with Bootstrap
+          </div>
+          <div class="col-md-3">
+            <span class="badge bg-success me-2">Backend</span> Spring Boot
+          </div>
+          <div class="col-md-3">
+            <span class="badge bg-info me-2">Database</span> MySQL  MongoDB
+          </div>
+          <div class="col-md-3">
+            <span class="badge bg-danger me-2">API</span> Reddit API
+          </div>
+        </div>
       </div>
     </div>
   </div>

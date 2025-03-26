@@ -7,7 +7,6 @@ import { AppRoutingModule } from './app-routing.module';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { HomeComponent } from './components/navbar/home.component';
 import { NavbarComponent } from './components/navbar/navbar.component';
-import { AboutComponent } from './components/navbar/about.component';
 import { LoginComponent } from './components/user/login.component';
 import { RegisterComponent } from './components/user/register.component';
 import { NotificationSettingsComponent } from './components/user/notification-settings.component';
@@ -27,7 +26,6 @@ import { environment } from '../environments/environment';
     AppComponent,
     HomeComponent,
     NavbarComponent,
-    AboutComponent,
     LoginComponent,
     RegisterComponent,
     NotificationSettingsComponent,
