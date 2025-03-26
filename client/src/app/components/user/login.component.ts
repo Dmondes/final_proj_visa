@@ -26,17 +26,14 @@ export class LoginComponent implements OnInit {
       password: new FormControl('', [Validators.required, Validators.minLength(6)])
     });
 
-    // Subscribe to error updates from the store
     this.userStore.error$.subscribe(error => {
       this.error = error || '';
     });
 
-    // Subscribe to loading state
     this.userStore.isLoading$.subscribe(isLoading => {
       this.isLoading = isLoading;
     });
 
-    // Check if user is already logged in
     this.userStore.isLoggedIn$.subscribe(isLoggedIn => {
       if (isLoggedIn) {
         this.router.navigate(['/watchlist']);

@@ -37,7 +37,7 @@ import { environment } from '../environments/environment';
     BrowserModule,
     AppRoutingModule,
     ReactiveFormsModule,
-    FormsModule, // Add FormsModule for ngModel
+    FormsModule, 
     AngularFireModule.initializeApp(environment.firebase),
     AngularFireAuthModule,
     AngularFireMessagingModule,
