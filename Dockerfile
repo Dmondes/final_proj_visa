@@ -13,6 +13,7 @@ COPY client/tsconfig*.json ./
 
 # Copy the entire source code
 COPY client/src ./src
+COPY client/public ./public
 
 # Install dependencies
 RUN npm ci
