@@ -202,6 +202,7 @@ public class ScrapRepo {
         for (int i = 0; i < wordList.size(); i++) {
             String originalWord = wordList.get(i);
             if (originalWord == null || originalWord.isEmpty()) {
+                logger.trace("Skipping null or empty word at index {}", i);
                 continue;
             }
 
@@ -212,6 +213,7 @@ public class ScrapRepo {
             // 1. Check for $ Prefix (Highest Priority)
             if (originalWord.startsWith("$") && originalWord.length() > 1) {
                 potentialTicker = originalWord.substring(1).replaceAll("[^A-Za-z]", ""); // Clean after $
+                if (potentialTicker.isEmpty()) {continue;}
                 potentialTicker = potentialTicker.toUpperCase();
                 isDollarPrefixed = true;
 
@@ -225,42 +227,33 @@ public class ScrapRepo {
                     }
                     // Add score to main map as well, in case context reinforces it
                     tickerScores.put(potentialTicker, tickerScores.getOrDefault(potentialTicker, 0) + currentScore);
-                } else {
-                    potentialTicker = null; // Invalid after cleaning
-                }
+                } 
             } else {
                 // 2. Process regular words (potential tickers)
                 potentialTicker = originalWord.replaceAll("[^A-Za-z]", "").toUpperCase();
-
-                // Basic validity checks
-                if (!isValidTicker(potentialTicker)) {
-                    continue; // Skip if not in our valid list or wrong format
+                if (potentialTicker.isEmpty() || !isValidTicker(potentialTicker)) {
+                    continue; 
                 }
 
                 // 3. Score based on Case (All Caps?)
-                // Check if the original word (before upper-casing) was all caps and matches the
-                // cleaned ticker
-                if (isAllUpperCase(originalWord.replaceAll("[^A-Za-z]", ""))
-                        && originalWord.replaceAll("[^A-Za-z]", "").equals(potentialTicker)) {
+                String cleanedWord = originalWord.replaceAll("[^A-Za-z]", "");
+                if (!cleanedWord.isEmpty() && isAllUpperCase(cleanedWord) && cleanedWord.equals(potentialTicker)) {
                     currentScore += SCORE_ALL_CAPS;
+
                 }
 
                 // 4. Score based on Context Keywords
                 int contextScore = 0;
                 int start = Math.max(0, i - 5); // Check 5 words before
-                int end = Math.min(wordList.size(), i + 6); // Check 5 words after (inclusive of current word's
-                                                            // potential context)
+                int end = Math.min(wordList.size(), i + 6); // Check 5 words after (inclusive of current word's potential context)
                 for (int j = start; j < end; j++) {
                     if (i == j)
                         continue;
-                    String word = wordList.get(j);
-                    if (word == null || word.isEmpty())
-                        continue;
-                    String contextWord = word.toLowerCase();
-                    if (TICKER_CONTEXT_KEYWORDS.contains(contextWord)) {
+                    String contextWord = wordList.get(j);
+                    if (contextWord != null && !contextWord.isEmpty() && TICKER_CONTEXT_KEYWORDS.contains(contextWord.toLowerCase())) {
                         contextScore += SCORE_CONTEXT_KEYWORD;
                         if (contextScore >= MAX_CONTEXT_SCORE) {
-                            break; // Stop adding context score if cap reached
+                            break;
                         }
                     }
                 }
