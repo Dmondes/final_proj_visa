@@ -1,12 +1,8 @@
-// src/service-worker.js
-
 // Import Workbox (using a recent version)
 importScripts(
   "https://storage.googleapis.com/workbox-cdn/releases/6.4.1/workbox-sw.js"
 );
 
-// Optional: Ensure console logs appear for Workbox
-// workbox.setConfig({ debug: true }); // Remove for production
 
 // Check if Workbox loaded
 if (workbox) {
@@ -21,7 +17,7 @@ if (workbox) {
   const { CacheFirst, NetworkFirst, NetworkOnly } = workbox.strategies;
   const { ExpirationPlugin } = workbox.expiration;
 
-  // 1. Cache Images, Fonts (CacheFirst is good here)
+  // 1. Cache Images, Fonts 
   registerRoute(
     ({ request }) => request.destination === 'image' || request.destination === 'font',
     new CacheFirst({
