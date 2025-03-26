@@ -1,43 +1,85 @@
 <header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
   <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3" routerLink="/home">
-    <img src="images/fintrend.svg" alt="Fintrend Logo" height="24" class="me-2"> Fintrend
+    <img
+      src="/images/fintrend.svg"
+      alt="Fintrend Logo"
+      height="24"
+      class="me-2"
+    />
+    Fintrend
   </a>
-  <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+  <button
+    class="navbar-toggler position-absolute d-md-none collapsed"
+    type="button"
+    data-bs-toggle="collapse"
+    data-bs-target="#sidebarMenu"
+    aria-controls="sidebarMenu"
+    aria-expanded="false"
+    aria-label="Toggle navigation"
+  >
     <span class="navbar-toggler-icon"></span>
   </button>
-  
+
   <!-- Search Form -->
   <form [formGroup]="searchForm" (submit)="search()" class="w-100">
-    <input class="form-control w-100" type="search" placeholder="Search Ticker..." formControlName="ticker" aria-label="Search">
+    <input
+      class="form-control w-100"
+      type="search"
+      placeholder="Search Ticker..."
+      formControlName="ticker"
+      aria-label="Search"
+    />
   </form>
-  
-  @if(this.searchForm.controls['ticker'].touched && this.searchForm.controls['ticker'].invalid){
+
+  @if (
+    this.searchForm.controls["ticker"].touched &&
+    this.searchForm.controls["ticker"].invalid
+  ) {
     <div class="error-message text-danger ms-2">
-      @if (this.searchForm.controls['ticker'].errors?.['required']) {
+      @if (this.searchForm.controls["ticker"].errors?.["required"]) {
         <span>Search term is required.</span>
       }
-      @if (this.searchForm.controls['ticker'].errors?.['minlength']) {
+      @if (this.searchForm.controls["ticker"].errors?.["minlength"]) {
         <span>Search term must be at least 1 character.</span>
       }
     </div>
   }
-  
+
   <!-- User Account with ng-bootstrap -->
   <div class="navbar-nav">
     <div ngbDropdown class="nav-item">
-      <a class="nav-link px-3" id="userDropdown" role="button" ngbDropdownToggle>
+      <a
+        class="nav-link px-3"
+        id="userDropdown"
+        role="button"
+        ngbDropdownToggle
+      >
         <i class="bi bi-person-circle"></i> Account
       </a>
-      <div ngbDropdownMenu class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+      <div
+        ngbDropdownMenu
+        class="dropdown-menu dropdown-menu-end"
+        aria-labelledby="userDropdown"
+      >
         @if (!(loginStatus | async)) {
-          <a ngbDropdownItem routerLink="/login"><i class="bi bi-box-arrow-in-right"></i> Sign In</a>
-          <a ngbDropdownItem routerLink="/signup"><i class="bi bi-person-plus"></i> Register</a>
+          <a ngbDropdownItem routerLink="/login"
+            ><i class="bi bi-box-arrow-in-right"></i> Sign In</a
+          >
+          <a ngbDropdownItem routerLink="/signup"
+            ><i class="bi bi-person-plus"></i> Register</a
+          >
         }
         @if (loginStatus | async) {
-          <a ngbDropdownItem routerLink="/notifications"><i class="bi bi-bell"></i> Notification Settings</a>
-          <a ngbDropdownItem href="#"><i class="bi bi-gear"></i> Account Settings</a>
+          <a ngbDropdownItem routerLink="/notifications"
+            ><i class="bi bi-bell"></i> Notification Settings</a
+          >
+          <a ngbDropdownItem href="#"
+            ><i class="bi bi-gear"></i> Account Settings</a
+          >
           <div class="dropdown-divider"></div>
-          <a ngbDropdownItem (click)="logout()"><i class="bi bi-box-arrow-right"></i> Sign Out</a>
+          <a ngbDropdownItem (click)="logout()"
+            ><i class="bi bi-box-arrow-right"></i> Sign Out</a
+          >
         }
       </div>
     </div>
@@ -47,7 +89,10 @@
 <div class="container-fluid">
   <div class="row">
     <!-- Sidebar Menu -->
-    <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+    <nav
+      id="sidebarMenu"
+      class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse"
+    >
       <div class="position-sticky pt-3">
         <ul class="nav flex-column">
           <li class="nav-item">
@@ -57,21 +102,33 @@
             </a>
           </li>
           @if (loginStatus | async) {
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                routerLink="/watchlist"
+                routerLinkActive="active"
+              >
+                <span data-feather="list"></span>
+                <i class="bi bi-list-ul"></i> Watchlist
+              </a>
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                routerLink="/notifications"
+                routerLinkActive="active"
+              >
+                <span data-feather="bell"></span>
+                <i class="bi bi-bell"></i> Notifications
+              </a>
+            </li>
+          }
           <li class="nav-item">
-            <a class="nav-link" routerLink="/watchlist" routerLinkActive="active">
-              <span data-feather="list"></span>
-              <i class="bi bi-list-ul"></i> Watchlist
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" routerLink="/notifications" routerLinkActive="active">
-              <span data-feather="bell"></span>
-              <i class="bi bi-bell"></i> Notifications
-            </a>
-          </li>
-        }
-          <li class="nav-item">
-            <a class="nav-link" routerLink="/trending" routerLinkActive="active">
+            <a
+              class="nav-link"
+              routerLink="/trending"
+              routerLinkActive="active"
+            >
               <span data-feather="trending-up"></span>
               <i class="bi bi-graph-up-arrow"></i> Trending
             </a>

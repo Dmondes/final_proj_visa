@@ -6,9 +6,6 @@ CREATE DATABASE stocks;
 -- Use the new database
 USE stocks;
 
--- Create user called 'finbro'
-CREATE USER IF NOT EXISTS 'finbro'@'%' IDENTIFIED BY 'password123';
-
 -- Create the listing table, symbol as primary key
 CREATE TABLE listing (
     symbol VARCHAR(10) PRIMARY KEY,
@@ -26,7 +23,6 @@ CREATE TABLE listing (
 --     password VARCHAR(255) NOT NULL,
 --     watchlist TEXT
 -- );
-
 CREATE TABLE users (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -36,6 +32,7 @@ CREATE TABLE users (
     fcm_token TEXT
 );
 
--- Grant privileges to user 'finbro'
-GRANT ALL PRIVILEGES ON stocks.* TO 'finbro'@'%';
-FLUSH PRIVILEGES;
+-- -- Add price_alerts column to users table
+-- ALTER TABLE users ADD COLUMN price_alerts TEXT DEFAULT '';
+-- -- Add fcm_token column to users table
+-- ALTER TABLE users ADD COLUMN fcm_token VARCHAR(255) DEFAULT NULL;

@@ -26,34 +26,58 @@ messaging.onBackgroundMessage((payload) => {
   
   // Customize notification here
   const notificationTitle = payload.notification.title || 'Fintrend Notification';
+  const notificationBody = payload.notification?.body || 'Check your watchlist!';
+  const notificationIcon = '/assets/icons/icon-72x72.png';
+  const notificationData = payload.data;
   const notificationOptions = {
-    body: payload.notification.body || 'New stock update available!',
-    icon: '/assets/icons/icon-72x72.png'
+    body: notificationBody,
+    icon: notificationIcon,
+    data: notificationData 
   };
-
   return self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
 // Handle notification click
 self.addEventListener('notificationclick', event => {
+  console.log('[firebase-messaging-sw.js] Notification click Received.');
   event.notification.close();
-  
-  // This looks to see if the current window is already open and
-  // focuses if it is
+
+  const notificationData = event.notification.data;
+  console.log('[firebase-messaging-sw.js] Clicked notification data: ', notificationData);
+
+  let urlToOpen = '/'; // Default URL
+  if (notificationData && notificationData.ticker) {
+    urlToOpen = `/stock/${notificationData.ticker}`; // Navigate to specific stock
+  } else if (notificationData && notificationData.url) {
+     urlToOpen = notificationData.url; // Or use a specific URL from backend
+  }
+
+   console.log('[firebase-messaging-sw.js] Opening window: ', urlToOpen);
+
   event.waitUntil(
-    clients.matchAll({
-      type: "window"
-    })
-    .then(function(clientList) {
-      // If a window tab matching the targeted URL already exists, focus that;
-      for (var i = 0; i < clientList.length; i++) {
-        var client = clientList[i];
-        if (client.url === '/' && 'focus' in client)
-          return client.focus();
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      // Check if a window/tab matching the target URL already exists
+      for (let i = 0; i < clientList.length; i++) {
+        const client = clientList[i];
+        // Use URL constructor for robust comparison (handles trailing slashes etc.)
+        try {
+            const clientUrl = new URL(client.url);
+            const targetUrl = new URL(urlToOpen, self.location.origin); // Use origin for relative paths
+
+            if (clientUrl.pathname === targetUrl.pathname && 'focus' in client) {
+                console.log('[firebase-messaging-sw.js] Found matching client, focusing.');
+                return client.focus();
+            }
+        } catch (e) {
+            // Handle potential URL parsing errors if needed
+             console.error("Error parsing URL in service worker:", e);
+        }
       }
-      // If no matching client is found, open a new one
-      if (clients.openWindow)
-        return clients.openWindow('/');
+      // If no matching client is found, open a new window/tab
+      if (clients.openWindow) {
+        console.log('[firebase-messaging-sw.js] No matching client, opening new window.');
+        return clients.openWindow(urlToOpen);
+      }
     })
   );
 });

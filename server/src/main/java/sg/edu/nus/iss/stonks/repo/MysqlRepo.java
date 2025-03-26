@@ -1,5 +1,6 @@
 package sg.edu.nus.iss.stonks.repo;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -7,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
@@ -19,17 +22,17 @@ import sg.edu.nus.iss.stonks.model.User;
 @Repository
 public class MysqlRepo {
 
+    private static final Logger logger = LoggerFactory.getLogger(MysqlRepo.class); 
     public static final String SQL_INSERT_STOCK = "INSERT INTO listing (symbol, company_name, market_cap, ipo_year, volume, sector, industry) VALUES (?, ?, ?, ?, ?, ?, ?)";
     public static final String SQL_COUNT_STOCKS = "select count(*) as count from listing";
     public static final String SQ_GET_SYMBOLS = "SELECT symbol FROM listing";
     public static final String SQL_FIND_BY_EMAIL = "SELECT * FROM users WHERE email = ?";
     public static final String SQL_EMAIL_EXISTS = "SELECT COUNT(*) FROM users WHERE email = ?";
     public static final String SQL_UPDATE_WATCH = "UPDATE users SET watchlist = ? WHERE id = ?";
-    // Changing SQL_INSERT_USER to handle both scenarios - with and without price_alerts/fcm_token columns
     public static final String SQL_INSERT_USER_FULL = "INSERT INTO users (email, password, watchlist, price_alerts, fcm_token) VALUES (?, ?, ?, ?, ?)";
-    public static final String SQL_INSERT_USER_BASIC = "INSERT INTO users (email, password, watchlist) VALUES (?, ?, ?)";
     public static final String SQL_UPDATE_PRICE_ALERTS = "UPDATE users SET price_alerts = ? WHERE id = ?";
     public static final String SQL_UPDATE_FCM_TOKEN = "UPDATE users SET fcm_token = ? WHERE id = ?";
+    public static final String SQL_FIND_USERS_WITH_ALERTS_AND_TOKEN = "SELECT * FROM users WHERE price_alerts IS NOT NULL AND price_alerts != '' AND fcm_token IS NOT NULL AND fcm_token != ''";
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -52,75 +55,18 @@ public class MysqlRepo {
         return new HashSet<>(symbols);
     }
 
-    public User findByEmail(String email) { // also get User
+    public User findByEmail(String email) {
         try {
-            if (emailExist(email)) {
-                SqlRowSet rs = jdbcTemplate.queryForRowSet(SQL_FIND_BY_EMAIL, email);
-                if (rs.next()) {
-                    try {
-                        User user = new User();
-                        user.setId(rs.getLong("id"));
-                        user.setEmail(rs.getString("email"));
-                        user.setPassword(rs.getString("password"));
-    
-                        // Parse watchlist
-                        String watchlistStr = rs.getString("watchlist");
-                        Set<String> watchlist = new HashSet<>();
-                        if (watchlistStr != null && !watchlistStr.isEmpty()) {
-                            try {
-                                watchlist = new HashSet<>(Arrays.asList(watchlistStr.split(",")));
-                            } catch (Exception e) {
-                                System.err.println("Error parsing watchlist for user " + email + ": " + e.getMessage());
-                                // Continue with empty watchlist
-                            }
-                        }
-                        user.setWatchlist(watchlist);
-    
-                        // Parse price alerts
-                        Map<String, PriceAlert> priceAlerts = new HashMap<>();
-                        try {
-                            String priceAlertsStr = rs.getString("price_alerts");
-                            if (priceAlertsStr != null && !priceAlertsStr.isEmpty()) {
-                                try {
-                                    String[] alertsArray = priceAlertsStr.split(";");
-                                    for (String alertStr : alertsArray) {
-                                        if (alertStr != null && !alertStr.trim().isEmpty()) {
-                                            PriceAlert alert = PriceAlert.fromString(alertStr.trim());
-                                            if (alert != null) {
-                                                priceAlerts.put(alert.getTicker(), alert);
-                                            }
-                                        }
-                                    }
-                                } catch (Exception e) {
-                                    System.err.println("Error parsing price alerts for user " + email + ": " + e.getMessage());
-                                    // Continue with empty price alerts
-                                }
-                            }
-                        } catch (Exception e) {
-                            System.out.println("price_alerts column may not exist for user " + email + ": " + e.getMessage());
-                            // Continue with empty price alerts
-                        }
-                        user.setPriceAlerts(priceAlerts);
-    
-                        // Get FCM token
-                        try {
-                            String fcmToken = rs.getString("fcm_token");
-                            user.setFcmToken(fcmToken);
-                        } catch (Exception e) {
-                            System.out.println("fcm_token column may not exist for user " + email + ": " + e.getMessage());
-                            user.setFcmToken(null);
-                        }
-    
-                        return user;
-                    } catch (Exception e) {
-                        System.err.println("Error building user object for " + email + ": " + e.getMessage());
-                    }
-                }
+            // Removed emailExist check here as queryForRowSet handles empty result
+            SqlRowSet rs = jdbcTemplate.queryForRowSet(SQL_FIND_BY_EMAIL, email);
+            if (rs.next()) {
+                 return mapRowToUser(rs);
+            } else {
+                logger.debug("User not found with email: {}", email);
+                return null;
             }
-            return null;
         } catch (Exception e) {
-            System.err.println("Database error when finding user by email " + email + ": " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Database error when finding user by email {}: {}", email, e.getMessage(), e);
             return null;
         }
     }
@@ -129,20 +75,10 @@ public class MysqlRepo {
         try {
             System.out.println("Attempting to create user: " + email);
             int result;
-            
-            try {
-                // First try with all columns including price_alerts and fcm_token
-                result = jdbcTemplate.update(SQL_INSERT_USER_FULL, email, password, "", "", null);
-                System.out.println("User creation with full schema successful: " + result + " rows affected.");
-            } catch (Exception e) {
-                System.out.println("Full schema insertion failed, trying basic schema: " + e.getMessage());
-                // If that fails, try with just the basic columns
-                result = jdbcTemplate.update(SQL_INSERT_USER_BASIC, email, password, "");
-                System.out.println("User creation with basic schema successful: " + result + " rows affected.");
-                
-                // Log a warning that database schema may need updating
-                System.out.println("WARNING: Database schema may need to be updated. Run the db_update.sql script.");
-            }
+            // First try with all columns including price_alerts and fcm_token
+            result = jdbcTemplate.update(SQL_INSERT_USER_FULL, email, password, "", "", null);
+            System.out.println("User creation with full schema successful: " + result + " rows affected.");
+
         } catch (Exception e) {
             System.err.println("Database error creating user: " + e.getMessage());
             e.printStackTrace();
@@ -174,4 +110,93 @@ public class MysqlRepo {
     public void updateFcmToken(Long userId, String fcmToken) {
         jdbcTemplate.update(SQL_UPDATE_FCM_TOKEN, fcmToken, userId);
     }
+    public List<User> findAllUsersWithAlertsAndToken() {
+        List<User> users = new ArrayList<>();
+        SqlRowSet rs = null;
+        try {
+            rs = jdbcTemplate.queryForRowSet(SQL_FIND_USERS_WITH_ALERTS_AND_TOKEN);
+            while (rs.next()) {
+                try {
+                    User user = mapRowToUser(rs); // Extract mapping logic
+                    if (user != null) {
+                       users.add(user);
+                    }
+                } catch (Exception e) {
+                    logger.error("Error building user object during alert check for row (ID maybe {}): {}", rs.getLong("id"), e.getMessage(), e);
+                    // Log and continue with the next user
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Database error executing findAllUsersWithAlertsAndToken: {}", e.getMessage(), e);
+        }
+        return users;
+    }
+    
+    private User mapRowToUser(SqlRowSet rs) throws Exception { // Throws Exception for conciseness here
+        User user = new User();
+        user.setId(rs.getLong("id"));
+        String email = rs.getString("email"); // Get email for logging context
+        user.setEmail(email);
+        user.setPassword(rs.getString("password")); // Might not be needed for alerts
+
+        // Parse watchlist
+        String watchlistStr = rs.getString("watchlist");
+        Set<String> watchlist = new HashSet<>();
+        if (watchlistStr != null && !watchlistStr.isEmpty()) {
+            try {
+                watchlist = new HashSet<>(Arrays.asList(watchlistStr.split(",")));
+            } catch (Exception e) {
+                logger.error("Error parsing watchlist for user {}: {}", email, e.getMessage());
+            }
+        }
+        user.setWatchlist(watchlist);
+        // Parse price alerts
+        Map<String, PriceAlert> priceAlerts = new HashMap<>();
+        try {
+            String priceAlertsStr = rs.getString("price_alerts");
+            if (priceAlertsStr != null && !priceAlertsStr.isEmpty()) {
+                 String[] alertsArray = priceAlertsStr.split(";");
+                 for (String alertStr : alertsArray) {
+                     if (alertStr != null && !alertStr.trim().isEmpty()) {
+                         PriceAlert alert = PriceAlert.fromString(alertStr.trim()); // Assumes PriceAlert.fromString exists
+                         if (alert != null) {
+                             priceAlerts.put(alert.getTicker(), alert);
+                         } else {
+                              logger.warn("Could not parse PriceAlert from string '{}' for user {}", alertStr, email);
+                         }
+                     }
+                 }
+            }
+        } catch (Exception e) {
+            // Check if column exists error or parsing error
+            if (e.getMessage() != null && e.getMessage().toLowerCase().contains("price_alerts")) {
+                 logger.warn("price_alerts column might be missing or inaccessible for user {}", email);
+            } else {
+                 logger.error("Error parsing price alerts for user {}: {}", email, e.getMessage());
+            }
+        }
+        user.setPriceAlerts(priceAlerts);
+        // Get FCM token
+        try {
+            String fcmToken = rs.getString("fcm_token");
+            user.setFcmToken(fcmToken);
+        } catch (Exception e) {
+             if (e.getMessage() != null && e.getMessage().toLowerCase().contains("fcm_token")) {
+                logger.warn("fcm_token column might be missing or inaccessible for user {}", email);
+             } else {
+                 logger.error("Error getting fcm_token for user {}: {}", email, e.getMessage());
+             }
+            user.setFcmToken(null);
+        }
+        return user;
+    }
+    // Optional: Add method to remove token if FCM send fails with UNREGISTERED
+    public void removeFcmToken(Long userId) {
+        try {
+             jdbcTemplate.update(SQL_UPDATE_FCM_TOKEN, (String)null, userId); // Set token to null
+             logger.info("Removed FCM token for user ID: {}", userId);
+        } catch (Exception e) {
+             logger.error("Failed to remove FCM token for user ID {}: {}", userId, e.getMessage());
+        }
+   }
 }
