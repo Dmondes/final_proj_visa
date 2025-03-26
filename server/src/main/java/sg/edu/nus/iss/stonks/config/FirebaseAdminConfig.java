@@ -28,7 +28,7 @@ public class FirebaseAdminConfig {
     @PostConstruct
     public void initializeFirebaseAdmin() {
         try {
-            // If Firebase App is already initialized, don't initialize again
+            // check if Firebase App is already initialized
             if (!FirebaseApp.getApps().isEmpty()) {
                 this.firebaseApp = FirebaseApp.getInstance();
                 logger.info("Firebase Admin SDK already initialized (default app found).");
@@ -69,7 +69,6 @@ public class FirebaseAdminConfig {
     public FirebaseMessaging firebaseMessaging() {
         if (this.firebaseApp == null) {
             logger.error("FirebaseApp not initialized. Cannot create FirebaseMessaging bean.");
-            // Try to get the default app if it exists (maybe initialized by FirebaseAuthConfig)
             if (!FirebaseApp.getApps().isEmpty()) {
                 // Use the default app or the fallback app if available
                 FirebaseApp app = FirebaseApp.getApps().stream()

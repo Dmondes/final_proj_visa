@@ -39,7 +39,6 @@ public class UserController {
                                       @RequestParam(required = false) String password,
                                       @RequestHeader("Authorization") String idToken) {
         try {
-            // Try to get email and password from request body first, fall back to request params
             String userEmail = (requestBody != null && requestBody.get("email") != null) 
                                ? requestBody.get("email") : email;
             String userPassword = (requestBody != null && requestBody.get("password") != null) 
@@ -56,7 +55,6 @@ public class UserController {
                 System.out.println("Token:" + uid);
                 System.out.println("Registering user: " + userEmail);
                 
-                // Token is valid, proceed with user registration
                 try {
                     boolean newUser = userService.registerUser(userEmail, userPassword);
                     if (newUser == false) {
@@ -93,8 +91,6 @@ public class UserController {
                 try {
                     String uid = firebaseAuthConfig.verifyToken(idToken);
                     System.out.println("Firebase token verified. UID: " + uid);
-                    
-                    // Token is valid, proceed with fetching user data
                     try {
                         User user = userService.findByEmail(email);
                         if (user != null) {
@@ -143,7 +139,6 @@ public class UserController {
                 idToken = idToken.substring(7);
                 String uid = firebaseAuthConfig.verifyToken(idToken);
                 System.out.println("Token:" + uid);
-                // Token is valid, proceed with adding to watchlist
                 userService.addToWatchlist(email, ticker);
                 return ResponseEntity.ok("Added to watchlist");
             } else {
@@ -163,7 +158,6 @@ public class UserController {
                 idToken = idToken.substring(7);
                 String uid = firebaseAuthConfig.verifyToken(idToken);
                 System.out.println("Token:" + uid);
-                // Token is valid, proceed with removing from watchlist
                 userService.removeFromWatchlist(email, ticker);
                 return ResponseEntity.ok("Removed from watchlist");
             } else {
@@ -184,8 +178,6 @@ public class UserController {
                 idToken = idToken.substring(7);
                 String uid = firebaseAuthConfig.verifyToken(idToken);
                 System.out.println("Token:" + uid);
-                
-                // Extract parameters from request body
                 String ticker = (String) payload.get("ticker");
                 Double targetPrice = ((Number) payload.get("targetPrice")).doubleValue();
                 String condition = (String) payload.get("condition");
@@ -193,8 +185,6 @@ public class UserController {
                 if (ticker == null || targetPrice == null || condition == null) {
                     return ResponseEntity.badRequest().body("Missing required parameters");
                 }
-                
-                // Token is valid, proceed with setting price alert
                 userService.setPriceAlert(email, ticker, targetPrice, condition);
                 return ResponseEntity.ok("Price alert set");
             } else {
@@ -216,7 +206,6 @@ public class UserController {
                 idToken = idToken.substring(7);
                 String uid = firebaseAuthConfig.verifyToken(idToken);
                 System.out.println("Token:" + uid);
-                // Token is valid, proceed with removing price alert
                 userService.removePriceAlert(email, ticker);
                 return ResponseEntity.ok("Price alert removed");
             } else {
@@ -237,14 +226,11 @@ public class UserController {
                 idToken = idToken.substring(7);
                 String uid = firebaseAuthConfig.verifyToken(idToken);
                 System.out.println("Token:" + uid);
-                
-                // Extract FCM token from request body
                 String fcmToken = payload.get("token");
                 if (fcmToken == null) {
                     return ResponseEntity.badRequest().body("Missing FCM token");
                 }
-                
-                // Token is valid, proceed with updating FCM token
+                // Token is valid, update FCM token
                 userService.updateFcmToken(email, fcmToken);
                 return ResponseEntity.ok("FCM token updated");
             } else {

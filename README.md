@@ -1,79 +1,63 @@
-# final_proj_visa
+Fintrend tracks trending stocks discussed on Reddit, allowing users to manage personal watchlists and receive automated price alert notifications via web push. Stay ahead of the market buzz!
 
-# Fintrend: Reddit Stock Tracker
+**➡️ url:** [https://www.fintrend.store/](https://www.fintrend.store/) 🚀
 
-Fintrend is a web application that tracks trending stocks discussed on popular investing subreddits. It provides users with insights into real-time market sentiment and helps them stay informed about potential investment opportunities.
+## Key Features ✨
 
-## Features
+*   **🔥 Trending Stock Discovery:** Identifies stocks with the most mentions across popular investing subreddits (r/wallstreetbets, r/stocks, r/investing, etc.) based on selectable timeframes (24 hours, 7 days).
+*   **📊 Real-time Stock Data:** Displays near real-time stock price information (current price, daily change, high/low, previous close) using the Finnhub API.
+*   **💬 Reddit Context:** Shows recent Reddit posts related to a specific ticker, providing context for why it might be trending.
+*   **⭐ Personalized Watchlist:** Logged-in users can create and manage a custom watchlist of stocks they want to monitor closely.
+*   **🔔 Price Alert Notifications:** Users can set custom price targets (above/below) for stocks in their watchlist and receive **Web Push Notifications** via Firebase Cloud Messaging (FCM) when those targets are met (requires browser permission).
+*   **🔒 Secure Authentication:** User registration and login handled via Firebase Authentication. Backend API endpoints are protected.
+*   **📱 Responsive Design:** Built with Angular and Bootstrap for a seamless experience on desktop and mobile web browsers.
+*   **🔍 Ticker Search:** Easily search for specific stock tickers to view their details.
+*   **⚙️ Automated Scraping:** Backend service automatically scrapes Reddit hourly and updates trending counts.
 
-*   **Trending Stock Discovery:** Identifies stocks with the most mentions across multiple subreddits (r/wallstreetbets, r/stocks, r/investing, r/StockMarket, r/DeepFuckingValue) within selectable timeframes (24 hours, 7 days).
-*   **Real-time Data:**  Scrapes Reddit for new posts and updates ticker counts hourly.  Weekly counts are updated daily.
-*   **Stock Details:** Provides key stock information, including current price, change, day's high/low, previous close, and a price range visualization, using the Finnhub API.
-*   **Recent Posts:** Displays the 5 most recent Reddit posts related to a selected ticker, allowing users to quickly gauge community sentiment.
-*   **User Watchlist:**  Registered users can add and remove stocks from a personalized watchlist for easy tracking (requires registration and login).
-*   **Search Functionality:** Users can search for specific stock tickers and view their details.
-*   **Responsive Design:**  Built with Angular and Bootstrap for a user-friendly experience across devices.
-*   **Clear Navigation:**  Uses Angular Router for easy navigation between different sections (Home, Trending, About, Watchlist, Stock Details).
-*   **Pagination** Trending stocks has pagination enabled.
 
-## Technology Stack
 
-*   **Frontend:** Angular (v19), Bootstrap, TypeScript.
-*   **Backend:** Spring Boot (Java), REST API.
-*   **Database:** MySQL (for user accounts and stock listing), MongoDB (for storing scraped Reddit posts and ticker counts).
-*   **APIs:** Reddit API (for scraping posts), Finnhub API (for stock data).
-*   **Scheduling:** Spring `@Scheduled` for periodic data updates.
-*  **Hash Routing:** Enabled hash routing for Railway deployment.
+## Technology Stack 🛠️
 
-## Project Structure
+*   **Frontend:**
+    *   Angular (~v19)
+    *   TypeScript
+    *   Bootstrap 5 / ng-bootstrap
+    *   Firebase Client SDK (Authentication, Cloud Messaging)
+    *   Workbox (for Service Worker - simplified configuration)
+*   **Backend:**
+    *   Java 23
+    *   Spring Boot 3.4
+    *   Spring Web (REST API)
+    *   Spring Data MongoDB
+    *   Spring JDBC (`JdbcTemplate`)
+    *   Firebase Admin SDK (Authentication verification, FCM sending)
+    *   Maven
+*   **Databases:**
+    *   **MongoDB:** Stores scraped Reddit post details and aggregated ticker counts.
+    *   **MySQL:** Stores user accounts (email, watchlist, price alerts, FCM token) and the initial stock listing.
+*   **External APIs:**
+    *   Reddit API (OAuth2 for data scraping)
+    *   Finnhub API (Real-time stock quotes)
+*   **Deployment:**
+    *   Docker
+    *   Railway (or any platform supporting Docker and environment variables)
 
-The project is divided into two main parts:
+## Architecture Overview 🏗️
 
-*   **`client` (Frontend):**  Contains the Angular application.  Key directories and files include:
-    *   `src/app/components`:  Contains Angular components for various parts of the UI (navbar, sidebar, user authentication, etc.).
-    *   `src/app/services`:  Provides services for interacting with the backend API (e.g., `StockService`, `UserService`).
-    *   `src/app/model`:  Defines data models (e.g., `Stock`, `StockPrice`, `User`, `Post`).
-    *   `src/app/app-routing.module.ts`:  Defines the application's routes.
-    *   `src/app/app.module.ts`:  The main Angular module.
+Fintrend follows a standard client-server architecture:
 
-*   **`server` (Backend):** Contains the Spring Boot application.  Key directories and files include:
-    *   `src/main/java/sg/edu/nus/iss/server`:  The main package.
-    *   `config`:  Configuration files (e.g., `ScrapConfig` for API keys).
-    *   `model`:  Data models (mirrors the frontend models).
-    *   `repo`:  Repositories for database interaction (`MongoRepo`, `MysqlRepo`, `ScrapRepo`).
-    *   `restcontroller`:  REST controllers (`TicketController`, `UserController`) to handle API requests.
-    *   `service`:  Service classes (`ScrapService`, `UserService`) containing business logic.
-    *   `ServerApplication.java`:  The main Spring Boot application class, including scheduled tasks.
-    *   `resources/application.properties`:  Application configuration (database credentials, API keys, scheduling cron expressions).
-     *   `resources/stock.sql`:  SQL script to create the MySQL database and tables.
-
-## Setup and Running
-
-1.  **Prerequisites:**
-    *   Java Development Kit (JDK) 17 or later.
-    *   Node.js (v18 or later) and npm (Node Package Manager).
-    *   Angular CLI (`npm install -g @angular/cli`).
-    *   MySQL and MongoDB servers running.
-    *   Reddit API credentials (client ID, client secret, username, password)
-    *   Finnhub API key.
-
-2.  **Backend (Server):**
-    *   Create the MySQL database and tables by running the `src/main/resources/stock.sql` script.
-    *   Run the application: `mvn spring-boot:run`
-
-3.  **Frontend (client):**
-    *   Navigate to the `client` directory.
-    *   Install dependencies: `npm install`
-
-4. **API Endpoints (Backend):**
-     *  `/api/trending`: Get trending tickers (with optional `timeframe` parameter: `24h` or `7d`).
-     *  `/api/stock/{ticker}`: Get stock details for a given ticker.
-     *  `/api/recentposts/{ticker}`: Get the 5 most recent Reddit posts for a ticker.
-     * `/api/login`: user login.
-     * `/api/register`: create new user.
-     *  `/api/user/watchlist/add` and `/api/user/watchlist/remove`: Add/remove tickers from the user's watchlist.
-     * `/api/user/{email}`: get user by email, together with user's details.
-
-Optional requirements
-domain name
-service worker
+1.  **Backend (Spring Boot):**
+    *   Scheduled tasks scrape Reddit posts using the Reddit API.
+    *   Analyzes posts to extract relevant stock tickers.
+    *   Stores post data and aggregated ticker counts in MongoDB.
+    *   Provides REST API endpoints (`/api/...`).
+    *   Fetches real-time stock data from Finnhub API upon request.
+    *   Manages user data (registration, login, watchlist, alerts, FCM tokens) in MySQL.
+    *   Verifies user authentication using Firebase Admin SDK.
+    *   Checks price alerts periodically and sends push notifications via FCM using Firebase Admin SDK.
+2.  **Frontend (Angular):**
+    *   Provides the user interface.
+    *   Interacts with the backend REST API to display trending stocks, stock details, manage watchlists, etc.
+    *   Handles user login/registration via the Firebase Client SDK, sending ID tokens to the backend for verification.
+    *   Requests notification permission and receives/manages the FCM client token via Firebase Client SDK, sending it to the backend.
+    *   Uses a Service Worker (`service-worker.js` + `firebase-messaging-sw.js`) to handle background push message reception and display notifications.

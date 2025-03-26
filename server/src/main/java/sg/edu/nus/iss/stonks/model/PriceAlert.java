@@ -81,7 +81,6 @@ public class PriceAlert {
             
             alert.setCondition(parts[2]);
             
-            // If createdAt was included
             if (parts.length > 3) {
                 try {
                     alert.setCreatedAt(Long.parseLong(parts[3]));

@@ -64,20 +64,17 @@ public class PriceAlertCheckService {
             return;
         }
 
-        // --- Fetch prices using ScrapService ---
         logger.info("Fetching current prices via ScrapService for tickers: {}", tickersToCheck);
         Map<String, Double> currentPrices = new HashMap<>();
         for (String ticker : tickersToCheck) {
             try {
                 StockPrice stockPrice = scrapService.getStockDetails(ticker);
-                // Check if StockPrice object is valid and current price 'c' is positive
                 if (stockPrice != null && stockPrice.getC() > 0) {
                     currentPrices.put(ticker, stockPrice.getC());
                 } else {
                     logger.warn("Could not get valid current price for ticker {} via ScrapService. Received: {}", ticker, stockPrice);
                 }
             } catch (Exception e) {
-                // Catch potential exceptions from scrapService.getStockDetails
                 logger.error("Error fetching details for ticker {} via ScrapService: {}", ticker, e.getMessage());
             }
         }
@@ -89,7 +86,7 @@ public class PriceAlertCheckService {
         logger.debug("Fetched prices via ScrapService: {}", currentPrices);
 
 
-        // --- Alert Checking Logic ---
+        // alert check
         for (User user : usersWithAlerts) {
             if (user.getPriceAlerts() == null || user.getPriceAlerts().isEmpty() || user.getFcmToken() == null || user.getFcmToken().isEmpty()) {
                 continue;
@@ -98,16 +95,15 @@ public class PriceAlertCheckService {
             for (Map.Entry<String, PriceAlert> entry : user.getPriceAlerts().entrySet()) {
                 String ticker = entry.getKey();
                 PriceAlert alert = entry.getValue();
-                Double currentPrice = currentPrices.get(ticker); // Get price from the map we just populated
+                Double currentPrice = currentPrices.get(ticker); 
 
                 if (currentPrice == null) {
-                    // Price fetch failed for this specific ticker, skip check
                     continue;
                 }
 
                 String cooldownKey = user.getId() + ":" + ticker;
 
-                // Cooldown Check (remains same)
+                // Cooldown Check
                 if (triggeredAlertCooldowns.containsKey(cooldownKey)) {
                      if (currentTime < triggeredAlertCooldowns.get(cooldownKey)) {
                           logger.trace("Alert for {}/{} is in cooldown for user {}.", ticker, alert.getCondition(), user.getEmail());
@@ -118,7 +114,7 @@ public class PriceAlertCheckService {
                      }
                 }
 
-                // Trigger Check (remains same)
+                // Trigger Check
                 boolean alertTriggered = false;
                 if ("above".equalsIgnoreCase(alert.getCondition()) && currentPrice >= alert.getTargetPrice()) {
                     alertTriggered = true;
@@ -135,21 +131,16 @@ public class PriceAlertCheckService {
                     logger.info("ALERT TRIGGERED for user {} ({}) - Ticker: {}, Condition: {}, Target: {}, Current: {}",
                             user.getEmail(), user.getId(), ticker, alert.getCondition(), df.format(alert.getTargetPrice()), df.format(currentPrice));
 
-                    // Send Notification (remains same)
+                    // Send Notifs
                     sendFcmNotification(user, alert, currentPrice);
-
-                    // Apply Cooldown (remains same)
                     triggeredAlertCooldowns.put(cooldownKey, currentTime + COOLDOWN_PERIOD_MS);
                     logger.info("Applied {}ms cooldown for {}/{} for user {}.", COOLDOWN_PERIOD_MS, ticker, alert.getCondition(), user.getEmail());
-
-                    // Optional: Remove alert logic (remains same, commented out)
                 }
             }
         }
         logger.info("Price alert check finished.");
     }
 
-    // --- sendFcmNotification method (Remains the same) ---
     private void sendFcmNotification(User user, PriceAlert alert, double currentPrice) {
         // ... (Keep the implementation from the previous response) ...
         String title = String.format("%s Price Alert Triggered", alert.getTicker());

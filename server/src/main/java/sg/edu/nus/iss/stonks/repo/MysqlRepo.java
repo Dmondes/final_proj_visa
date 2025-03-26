@@ -68,7 +68,6 @@ public class MysqlRepo {
 
     public User findByEmail(String email) {
         try {
-            // Removed emailExist check here as queryForRowSet handles empty result
             SqlRowSet rs = jdbcTemplate.queryForRowSet(SQL_FIND_BY_EMAIL, email);
             if (rs.next()) {
                  return mapRowToUser(rs);
@@ -86,14 +85,13 @@ public class MysqlRepo {
         try {
             System.out.println("Attempting to create user: " + email);
             int result;
-            // First try with all columns including price_alerts and fcm_token
             result = jdbcTemplate.update(SQL_INSERT_USER_FULL, email, password, "", "", null);
             System.out.println("User creation with full schema successful: " + result + " rows affected.");
 
         } catch (Exception e) {
             System.err.println("Database error creating user: " + e.getMessage());
             e.printStackTrace();
-            throw e; // Re-throw to allow proper error handling in service layer
+            throw e; 
         }
     }
 
@@ -134,7 +132,6 @@ public class MysqlRepo {
                     }
                 } catch (Exception e) {
                     logger.error("Error building user object during alert check for row (ID maybe {}): {}", rs.getLong("id"), e.getMessage(), e);
-                    // Log and continue with the next user
                 }
             }
         } catch (Exception e) {
@@ -143,12 +140,12 @@ public class MysqlRepo {
         return users;
     }
     
-    private User mapRowToUser(SqlRowSet rs) throws Exception { // Throws Exception for conciseness here
+    private User mapRowToUser(SqlRowSet rs) throws Exception { 
         User user = new User();
         user.setId(rs.getLong("id"));
-        String email = rs.getString("email"); // Get email for logging context
+        String email = rs.getString("email"); 
         user.setEmail(email);
-        user.setPassword(rs.getString("password")); // Might not be needed for alerts
+        user.setPassword(rs.getString("password"));
 
         // Parse watchlist
         String watchlistStr = rs.getString("watchlist");
@@ -201,7 +198,6 @@ public class MysqlRepo {
         }
         return user;
     }
-    // Optional: Add method to remove token if FCM send fails with UNREGISTERED
     public void removeFcmToken(Long userId) {
         try {
              jdbcTemplate.update(SQL_UPDATE_FCM_TOKEN, (String)null, userId); // Set token to null

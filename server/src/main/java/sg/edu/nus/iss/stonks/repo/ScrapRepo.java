@@ -72,13 +72,6 @@ public class ScrapRepo {
             "invest", "investment", "portfolio", "bullish", "bearish", "moon", "diamond",
             "hands", "tendies", "yolo", "dd", "due diligence");
 
-    private static final int SCORE_DOLLAR_PREFIX = 100; // Very strong signal
-    private static final int SCORE_ALL_CAPS = 25; // Strong signal
-    private static final int SCORE_CONTEXT_KEYWORD = 8; // Moderate signal per keyword
-    private static final int SCORE_COMPANY_NAME_MATCH = 15; // Moderate signal
-    private static final int MAX_CONTEXT_SCORE = 24; // Cap context score
-    private static final int MIN_CONFIDENCE_THRESHOLD = 20;
-
     @PostConstruct
     public void init() {
         if (sqlRepo.countStocks() == 0) {
@@ -186,6 +179,14 @@ public class ScrapRepo {
         }
     }
 
+    private static final int SCORE_DOLLAR_PREFIX = 100; // Very strong signal
+    private static final int SCORE_ALL_CAPS = 25; // Strong signal
+    private static final int SCORE_CONTEXT_KEYWORD = 8; // Moderate signal per keyword
+    private static final int SCORE_COMPANY_NAME_MATCH = 15; // Moderate signal
+    private static final int MAX_CONTEXT_SCORE = 24; // Cap context score
+    private static final int MIN_CONFIDENCE_THRESHOLD = 20;
+
+
     public String filterTicker(String text) {
         if (text == null || text.isBlank()) {
             return null;
@@ -217,10 +218,9 @@ public class ScrapRepo {
                 potentialTicker = potentialTicker.toUpperCase();
                 isDollarPrefixed = true;
 
-                // Only proceed if it's a valid ticker after cleaning
                 if (isValidTicker(potentialTicker)) {
                     currentScore = SCORE_DOLLAR_PREFIX;
-                    // Store this separately as it's a very strong candidate
+                    // Store this separately as it's a very strong candidate 
                     if (currentScore > dollarTickerScore) {
                         dollarTickerScore = currentScore;
                         potentialDollarTicker = potentialTicker;
@@ -262,8 +262,7 @@ public class ScrapRepo {
                 // 5. Score based on Company Name Match
                 String companyName = tickerToCompanyNameMap.get(potentialTicker);
                 if (companyName != null && !companyName.isEmpty()) {
-                    // Simple check if company name (partially) exists in the lowercased text
-                    // More sophisticated matching (e.g., checking word boundaries) could be added
+                    // check if company name (partially) exists in the lowercased text
                     if (textLower.contains(companyName.toLowerCase())) {
                         currentScore += SCORE_COMPANY_NAME_MATCH;
                     }
