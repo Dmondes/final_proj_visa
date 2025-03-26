@@ -212,7 +212,7 @@ public class ScrapRepo {
             boolean isDollarPrefixed = false;
 
             // 1. Check for $ Prefix (Highest Priority)
-            if (originalWord.startsWith("$") && originalWord.length() > 1) {
+            if (originalWord != null && originalWord.startsWith("$") && originalWord.length() > 1) {
                 potentialTicker = originalWord.substring(1).replaceAll("[^A-Za-z]", ""); // Clean after $
                 potentialTicker = potentialTicker.toUpperCase();
                 isDollarPrefixed = true;

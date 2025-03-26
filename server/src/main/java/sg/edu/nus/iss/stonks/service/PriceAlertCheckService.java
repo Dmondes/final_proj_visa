@@ -30,6 +30,7 @@ public class PriceAlertCheckService {
     @Autowired
     private MysqlRepo mysqlRepo;
 
+    @Autowired
     private ScrapService scrapService;
 
     @Autowired(required = false)
