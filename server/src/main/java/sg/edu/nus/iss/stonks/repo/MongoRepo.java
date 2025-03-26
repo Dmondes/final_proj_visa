@@ -36,7 +36,10 @@ public class MongoRepo {
 
         Map<String, Integer> newCounts = new HashMap<>();
         for (ScrapedPost post : postsInTimeframe) {
-            newCounts.put(post.getTicker(), newCounts.getOrDefault(post.getTicker(), 0) + 1);
+            String ticker = post.getTicker();
+            if (ticker != null && !ticker.isEmpty()) {
+                newCounts.put(ticker, newCounts.getOrDefault(ticker, 0) + 1);
+            }
         }
         System.out.println("New counts for " + timeframe + ": " + newCounts.size() + " tickers.");
         Document tickersUpdateDoc = new Document();
@@ -65,9 +68,13 @@ public class MongoRepo {
 
         if (timeframeDoc != null) {
             Document tickersDoc = timeframeDoc.get("tickers", Document.class);
-            tickersDoc.forEach((ticker, data) -> {
-                counts.put(ticker, ((Document) data).getInteger("count"));
-            });
+            if (tickersDoc != null) {
+                tickersDoc.forEach((ticker, data) -> {
+                    if (ticker != null && data != null) {
+                        counts.put(ticker, ((Document) data).getInteger("count"));
+                    }
+                });
+            }
         }
         return counts;
     }
