@@ -18,6 +18,7 @@ const routes: Routes = [
   { path: 'trending', component: TrendingComponent },
   { path: 'stock/:ticker', component: StockComponent },
   { path: 'watchlist', component: WatchlistComponent, canActivate: [AuthGuard] },
+  { path: 'notifications', component: StockComponent },
   { path: '', redirectTo: '/home', pathMatch: 'full' }
 ];
 

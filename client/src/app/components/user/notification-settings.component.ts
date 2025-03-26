@@ -21,10 +21,8 @@ export class NotificationSettingsComponent implements OnInit {
   hasPriceAlerts = false;
   
   ngOnInit(): void {
-    // Check if notifications are already enabled
     this.checkNotificationStatus();
     
-    // Load price alerts
     this.loadPriceAlerts();
   }
   
