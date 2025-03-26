@@ -98,14 +98,4 @@ public class MongoRepo {
         Query query = new Query(Criteria.where("redditId").is(redditId));
         return mongoTemplate.exists(query, ScrapedPost.class, "posts");
     }
-
-    public boolean postCountCheck(String redditId) {
-        Query query = new Query(Criteria.where("redditId").is(redditId));
-        return mongoTemplate.exists(query, "countedPosts");
-    }
-
-    public void checkedPost(String redditId) {
-        Document doc = new Document("redditId", redditId);
-        mongoTemplate.insert(doc, "countedPosts");
-    }
 }
