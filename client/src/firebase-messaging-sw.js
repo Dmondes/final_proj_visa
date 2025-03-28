@@ -45,7 +45,7 @@ self.addEventListener('notificationclick', event => {
 
   let urlToOpen = '/'; 
   if (notificationData && notificationData.ticker) {
-    urlToOpen = `/stock/${notificationData.ticker}`; // Navigate to specific stock
+    urlToOpen = `#/stock/${notificationData.ticker}`; // Navigate to specific stock
   } else if (notificationData && notificationData.url) {
      urlToOpen = notificationData.url;
   }
